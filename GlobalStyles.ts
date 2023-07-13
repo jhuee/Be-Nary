@@ -1,7 +1,7 @@
 /* fonts */
 export const FontFamily = {
   juaRegular: "Jua_regular",
-  sFProBold: "SF Pro_bold",
+  sFProBold: "SF_Pro_bold",
 };
 /* font sizes */
 export const FontSize = {
