@@ -1,9 +1,47 @@
-import * as React from "react";
+// import * as React from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
+import React, { useEffect, useState } from 'react';
+import  { getTTSContent,  } from '../lib/ttsServer';
+import { Audio } from 'expo-av';
 
 const VoiceGame = () => {
+  const [audioURI, setAudioURI] = useState<string>('');
+
+  useEffect(() => {
+    const fetchTTS = async () => {
+      const audioContent = await getTTSContent({
+        text: '사과',
+        languageCode: 'ko-KR',
+        voiceName: 'ko-KR-Wavenet-A',
+      });
+      if (audioContent) {
+        const audioFileUri = await saveAudioFile(audioContent);
+        setAudioURI(audioFileUri);
+      }
+    };
+
+    fetchTTS();
+  }, []);
+
+  useEffect(() => {
+    if (audioURI) {
+      const playAudio = async () => {
+        const soundObject = new Audio.Sound();
+        try {
+          await soundObject.loadAsync({ uri: audioURI });
+          await soundObject.playAsync();
+        } catch (error) {
+          console.error('Failed to load the sound', error);
+        }
+      };
+
+      playAudio();
+    }
+  }, [audioURI]);
+
+
   return (
     <View style={styles.voiceGame}>
       <Image
@@ -12,7 +50,7 @@ const VoiceGame = () => {
         source={require("../assets/background-circle.png")}
       />
       <Text style={[styles.text, styles.textFlexBox1]}>🍎</Text>
-      <Text style={[styles.text1, styles.textFlexBox]}>사과</Text>
+      <Text style={[styles.text1, styles.textFlexBox]} >사과</Text>
       <View style={styles.messageBox}>
         <Text style={[styles.text2, styles.textTypo]}>{`발음이 “다’에 가까워요!
 사슴의 발음을 듣고
