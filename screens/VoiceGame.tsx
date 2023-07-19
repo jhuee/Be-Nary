@@ -3,45 +3,47 @@ import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from 'react';
-import  { getTTSContent,  } from '../lib/ttsServer';
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
-  const [audioURI, setAudioURI] = useState<string>('');
-
-  useEffect(() => {
-    const fetchTTS = async () => {
-      const audioContent = await getTTSContent({
-        text: '사과',
+  function textToSpeech(_text : string) {
+    const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
+    const data = {
+      input: {
+        text: _text,
+      },
+      voice: {
         languageCode: 'ko-KR',
-        voiceName: 'ko-KR-Wavenet-A',
-      });
-      if (audioContent) {
-        const audioFileUri = await saveAudioFile(audioContent);
-        setAudioURI(audioFileUri);
-      }
+        name: 'ko-KR-Neural2-c',
+        ssmlGender: 'MALE',
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+      },
     };
-
-    fetchTTS();
-  }, []);
-
-  useEffect(() => {
-    if (audioURI) {
-      const playAudio = async () => {
-        const soundObject = new Audio.Sound();
-        try {
-          await soundObject.loadAsync({ uri: audioURI });
-          await soundObject.playAsync();
-        } catch (error) {
-          console.error('Failed to load the sound', error);
-        }
-      };
-
-      playAudio();
-    }
-  }, [audioURI]);
-
-
+    const otherparam = {
+      headers: {
+        "content-type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify(data),
+      method: "POST",
+    };
+    // 사운드 생성
+    fetch(url, otherparam)
+      .then((data) => {
+        return data.json();
+      })
+      .then((res) => {
+        console.log(res.audioContent); // base64
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+  textToSpeech('사과');
+  
   return (
     <View style={styles.voiceGame}>
       <Image
