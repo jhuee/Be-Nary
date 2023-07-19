@@ -1,6 +1,6 @@
 // import * as React from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View,Button } from "react-native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
@@ -8,6 +8,7 @@ import * as FileSystem from 'expo-file-system';
 import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   useEffect(() => {
   function textToSpeech(_text : string) {
@@ -63,14 +64,94 @@ const VoiceGame = () => {
       );
       setSound(sound);
       console.log('음성 재생 시작');
+
+      setTimeout(() => {
+        startRecording();
+      }, 2000); // 2초 뒤 녹음 시작
+
     } catch (error) {
       console.error('음성 재생 오류:', error);
     }
   };
-
   },[]);
 
+  // 녹음을 시작하는 함수
+  async function startRecording() {
+    try {
+      console.log('Requesting permissions..');
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
 
+      console.log('Starting recording..');
+      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      setRecording(recording);
+      console.log('Recording started');
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  }
+
+  // 녹음을 종료하는 함수
+  const stopRecording = async () => {
+    console.log('Stopping recording..');
+    if (recording) {
+      await recording.stopAndUnloadAsync();
+    }
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+    });
+    setRecording(null); // 녹음 종료 시 recording 상태를 다시 null로 설정
+    if (recording) {
+      const uri = recording.getURI();
+      
+  // API로 녹음된 오디오를 보내고 발음 평가를 수행합니다.
+      sendPronunciationEvaluation(uri);
+      console.log('Recording stopped and stored at', uri);
+    }
+  };
+
+  const sendPronunciationEvaluation = async (audioUri : any) => {
+    const openApiURL = 'http://aiopen.etri.re.kr:8000/WiseASR/PronunciationKor'; // 한국어
+    const accessKey = 'ab9bf69a-2837-4014-86c7-29d836f1809c';
+    const languageCode = 'korean';
+    const script = '사과';
+  
+    try {
+      const audioContent = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+  
+      const requestJson = {
+        argument: {
+          language_code: languageCode,
+          script: script,
+          audio: audioContent,
+        },
+      };
+  
+      const response = await fetch(openApiURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: accessKey,
+        },
+        body: JSON.stringify(requestJson),
+      });
+  
+      const responseData = await response.json();
+      console.log('Response Data:', responseData);
+      
+      // 이후에 응답 데이터를 처리하고 발음 평가 결과를 화면에 표시하는 로직을 추가할 수 있습니다.
+      // responseData에는 API 응답 데이터가 들어 있을 것입니다.
+  
+    } catch (error) {
+      console.error('API 요청 중 오류:', error);
+    }
+  };
+  
   
   
   return (
@@ -102,6 +183,17 @@ const VoiceGame = () => {
             source={require("../assets/rectangle-123141.png")}
           />
           <Text style={[styles.text3, styles.textFlexBox1]}>다시하기</Text>
+          {recording ? (
+          <Button
+            title="Stop Recording"
+            onPress={stopRecording}
+          />
+        ) : (
+          <Button
+            title="Start Recording"
+            onPress={startRecording}
+          />
+        )}
         </View>
       </View>
       <View style={styles.repeatMessage}>
