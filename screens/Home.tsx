@@ -1,11 +1,28 @@
-import * as React from "react";
+//Home.tsx
+import { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchNickname } from "./userinfo/nickname";
 
 const Home = () => {
   const navigation = useNavigation<any>();
+  const [nickname, setNickname] = useState<string>(""); 
+  //닉네임 가져오기
+
+
+  useEffect(() => {
+    const getNickname = async () => {
+      const nickname = await fetchNickname();
+      if (nickname) {
+        setNickname(nickname);
+      }
+    };
+  
+    getNickname();
+  }, []);
 
   return (
     <View style={styles.home}>
@@ -44,19 +61,6 @@ const Home = () => {
           style={styles.iphone14Pro4Child3}
           contentFit="cover"
           source={require("../assets/ellipse-15.png")}
-        />
-        <Text style={styles.text}>{`안녕 주희!
-오늘의 발음 연습
-구름이와 함께 해요!`}</Text>
-        <Image
-          style={styles.rectangleIcon}
-          contentFit="cover"
-          source={require("../assets/rectangle-12318.png")}
-        />
-        <Image
-          style={styles.iphone14Pro4Child4}
-          contentFit="cover"
-          source={require("../assets/rectangle-12320.png")}
         />
         <Text style={[styles.text1, styles.textTypo1]}>구름이의 성장단계</Text>
       </View>
@@ -97,7 +101,7 @@ const Home = () => {
           contentFit="cover"
           source={require("../assets/ellipse-15.png")}
         />
-        <Text style={[styles.text2, styles.text2Typo]}>{`안녕 주희 !
+        <Text style={[styles.text2, styles.text2Typo]}>{`안녕 ${nickname}!
 오늘의 발음 연습
 구름이와 함께 해요 !`}</Text>
         <Image

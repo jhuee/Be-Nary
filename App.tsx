@@ -16,6 +16,7 @@ const App = () => {
   const [hideSplashScreen, setHideSplashScreen] = React.useState(false);
   const [fontsLoaded, error] = useFonts({
     Jua_regular: require("./assets/fonts/Jua_regular.ttf"),
+    SF_Pro_bold: require("./assets/fonts/SF_Pro_bold.ttf"),
   });
 
   React.useEffect(() => {
