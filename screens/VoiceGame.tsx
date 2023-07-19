@@ -8,19 +8,24 @@ import * as FileSystem from 'expo-file-system';
 import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
+  const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
+  useEffect(() => {
   function textToSpeech(_text : string) {
     const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
     const data = {
+      
       input: {
         text: _text,
       },
       voice: {
         languageCode: 'ko-KR',
-        name: 'ko-KR-Neural2-c',
-        ssmlGender: 'MALE',
+        name: 'ko-KR-Neural2-B',
+        ssmlGender: 'FEMALE',
       },
       audioConfig: {
         audioEncoding: "MP3",
+        pitch : 2.8,
+        speakingRate: 0.90
       },
     };
     const otherparam = {
@@ -37,12 +42,36 @@ const VoiceGame = () => {
       })
       .then((res) => {
         console.log(res.audioContent); // base64
+        saveTTS(res.audioContent)
       })
       .catch((error) => {
         console.log(error);
       });
   }
   textToSpeech('사과');
+  const fileUri = `${FileSystem.documentDirectory}output.mp3`;
+  const saveTTS = async (audioContent: Uint8Array): Promise<void> => {
+
+    await FileSystem.writeAsStringAsync(fileUri, audioContent.toString(), {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: fileUri },
+        { shouldPlay: true }
+      );
+      setSound(sound);
+      console.log('음성 재생 시작');
+    } catch (error) {
+      console.error('음성 재생 오류:', error);
+    }
+  };
+
+  },[]);
+
+
+  
   
   return (
     <View style={styles.voiceGame}>
