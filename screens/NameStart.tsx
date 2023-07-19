@@ -15,7 +15,6 @@ const NameStart = () => {
     const nickname = event.nativeEvent.text;
     try {
       await AsyncStorage.setItem('nickname', nickname);
-      console.log('Nickname saved:', nickname);
     } catch (e: any) {
       console.error(e.message);
     }

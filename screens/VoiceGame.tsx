@@ -1,9 +1,63 @@
-import * as React from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
+import React, { useEffect } from 'react';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base-64';
 
 const VoiceGame = () => {
+  const textToSpeech = async (_text: string) => {
+    try {
+      const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_GOOGLE_CLOUD_API_KEY";
+      const data = {
+        input: {
+          text: _text,
+        },
+        voice: {
+          languageCode: 'ko-KR',
+          name: 'ko-KR-Neural2-c',
+          ssmlGender: 'MALE',
+        },
+        audioConfig: {
+          audioEncoding: "MP3",
+        },
+      };
+      const otherparam = {
+        headers: {
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: JSON.stringify(data),
+        method: "POST",
+      };
+
+      // 사운드 생성
+      const response = await fetch(url, otherparam);
+      const resData = await response.json();
+      if (resData.audioContent) {
+        await playSound(resData.audioContent);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const playSound = async (base64Data: string) => {
+    try {
+      const soundObject = new Audio.Sound();
+      const source = { uri: `data:audio/mp3;base64,${base64Data}` };
+      await soundObject.loadAsync(source);
+      await soundObject.playAsync();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    textToSpeech('사과');
+  }, []);
+  textToSpeech('apple');
+  
   return (
     <View style={styles.voiceGame}>
       <Image
@@ -12,7 +66,7 @@ const VoiceGame = () => {
         source={require("../assets/background-circle.png")}
       />
       <Text style={[styles.text, styles.textFlexBox1]}>🍎</Text>
-      <Text style={[styles.text1, styles.textFlexBox]}>사과</Text>
+      <Text style={[styles.text1, styles.textFlexBox]} >사과</Text>
       <View style={styles.messageBox}>
         <Text style={[styles.text2, styles.textTypo]}>{`발음이 “다’에 가까워요!
 사슴의 발음을 듣고

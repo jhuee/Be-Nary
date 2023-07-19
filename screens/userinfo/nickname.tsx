@@ -10,5 +10,5 @@ export const fetchNickname = async () => {
     }
   } catch (e: any) {
     console.log(e.message);
-  }
+  } 
 };
