@@ -1,10 +1,24 @@
 import * as React from "react";
+import { useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontSize, FontFamily, Color, Border } from "../GlobalStyles";
 
-const VoiceTalk = () => {
+const VoiceTalk: React.FC = () => {
+  const [userMessage, setUserMessage] = useState<string>("");
+  const [aiResponse, setAIResponse] = useState<string>("");
+
+  const handleMicPress = async() => {
+    // 음성 인식 라이브러리를 사용하여 사용자의 음성을 입력으로 받음
+    // userMessage 상태 업데이트
+
+    // OpenAI API를 사용하여 생성형 AI에게 응답 요청
+    const response = await fetchAIResponse(userMessage); // await를 추가하여 Promise를 해결
+    // aiResponse 상태 업데이트
+    setAIResponse(response);
+  };
+  
   return (
     <LinearGradient
       style={styles.voiceTalk}
@@ -26,7 +40,7 @@ const VoiceTalk = () => {
         contentFit="cover"
         source={require("../assets/mic.png")}
       />
-      <Text style={styles.text}>{`주희야....너 혹시 몇살이야?`}</Text>
+      <Text style={styles.text}>{'메시지'}</Text>
     </LinearGradient>
   );
 };

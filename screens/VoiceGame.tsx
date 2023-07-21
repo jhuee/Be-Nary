@@ -1,62 +1,77 @@
+// import * as React from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { decode } from 'base-64';
+import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
-  const textToSpeech = async (_text: string) => {
-    try {
-      const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_GOOGLE_CLOUD_API_KEY";
-      const data = {
-        input: {
-          text: _text,
-        },
-        voice: {
-          languageCode: 'ko-KR',
-          name: 'ko-KR-Neural2-c',
-          ssmlGender: 'MALE',
-        },
-        audioConfig: {
-          audioEncoding: "MP3",
-        },
-      };
-      const otherparam = {
-        headers: {
-          "content-type": "application/json; charset=UTF-8",
-        },
-        body: JSON.stringify(data),
-        method: "POST",
-      };
-
-      // 사운드 생성
-      const response = await fetch(url, otherparam);
-      const resData = await response.json();
-      if (resData.audioContent) {
-        await playSound(resData.audioContent);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const playSound = async (base64Data: string) => {
-    try {
-      const soundObject = new Audio.Sound();
-      const source = { uri: `data:audio/mp3;base64,${base64Data}` };
-      await soundObject.loadAsync(source);
-      await soundObject.playAsync();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   useEffect(() => {
-    textToSpeech('사과');
-  }, []);
-  textToSpeech('apple');
+  function textToSpeech(_text : string) {
+    const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
+    const data = {
+      
+      input: {
+        text: _text,
+      },
+      voice: {
+        languageCode: 'ko-KR',
+        name: 'ko-KR-Neural2-B',
+        ssmlGender: 'FEMALE',
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+        pitch : 2.8,
+        speakingRate: 0.90
+      },
+    };
+    const otherparam = {
+      headers: {
+        "content-type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify(data),
+      method: "POST",
+    };
+    // 사운드 생성
+    fetch(url, otherparam)
+      .then((data) => {
+        return data.json();
+      })
+      .then((res) => {
+        console.log(res.audioContent); // base64
+        saveTTS(res.audioContent)
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+  textToSpeech('사과');
+  const fileUri = `${FileSystem.documentDirectory}output.mp3`;
+  const saveTTS = async (audioContent: Uint8Array): Promise<void> => {
+
+    await FileSystem.writeAsStringAsync(fileUri, audioContent.toString(), {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: fileUri },
+        { shouldPlay: true }
+      );
+      setSound(sound);
+      console.log('음성 재생 시작');
+    } catch (error) {
+      console.error('음성 재생 오류:', error);
+    }
+  };
+
+  },[]);
+
+
+  
   
   return (
     <View style={styles.voiceGame}>
