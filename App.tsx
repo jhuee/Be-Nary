@@ -9,6 +9,7 @@ import VoiceTalk from "./screens/VoiceTalk";
 import Home from "./screens/Home";
 import NameStart from "./screens/NameStart";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
+import { NativeBaseProvider } from 'native-base';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ const App = () => {
 
   return (
     <>
+    <NativeBaseProvider>
       <NavigationContainer>
         {hideSplashScreen ? (
           <Stack.Navigator
@@ -70,6 +72,7 @@ const App = () => {
           </Stack.Navigator>
         ) : null}
       </NavigationContainer>
+      </NativeBaseProvider>
     </>
   );
 };

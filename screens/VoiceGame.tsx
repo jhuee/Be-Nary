@@ -1,15 +1,19 @@
 // import * as React from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View,Button } from "react-native";
+import { StyleSheet, Text, View,Button, Pressable } from "react-native";
+import { Modal } from 'native-base'
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { decode } from 'base-64'; // Import the decode function from 'base-64'
+// import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
+  const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
+  const [modalMessage, setModalMessage] = useState(''); // 모달에 표시할 메시지 상태
+
   useEffect(() => {
   function textToSpeech(_text : string) {
     const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
@@ -146,12 +150,22 @@ const VoiceGame = () => {
       
       // 이후에 응답 데이터를 처리하고 발음 평가 결과를 화면에 표시하는 로직을 추가할 수 있습니다.
       // responseData에는 API 응답 데이터가 들어 있을 것입니다.
-  
+
+        if(parseFloat(responseData.return_object.score)>2.0){
+          setModalMessage('하연~ 참 잘했어요!');
+        } else {
+          setModalMessage('아쉬워요😥'+'\n'+
+          '다시 한 번 해볼까요?');
+        }
+        setShowModal(true);
+      
     } catch (error) {
       console.error('API 요청 중 오류:', error);
     }
   };
-  
+
+   
+
   
   
   return (
@@ -163,39 +177,27 @@ const VoiceGame = () => {
       />
       <Text style={[styles.text, styles.textFlexBox1]}>🍎</Text>
       <Text style={[styles.text1, styles.textFlexBox]} >사과</Text>
-      <View style={styles.messageBox}>
-        <Text style={[styles.text2, styles.textTypo]}>{`발음이 “다’에 가까워요!
-사슴의 발음을 듣고
- 다시 말해볼까요?
-`}</Text>
-        <View style={[styles.nextMission, styles.missionLayout1]}>
-          <Image
-            style={[styles.nextMissionIcon, styles.missionLayout]}
-            contentFit="cover"
-            source={require("../assets/next-mission.png")}
-          />
-          <Text style={[styles.text3, styles.textFlexBox1]}>다음문제</Text>
-        </View>
-        <View style={[styles.retryMission, styles.missionLayout1]}>
-          <Image
-            style={[styles.retryMissionChild, styles.missionLayout]}
-            contentFit="cover"
-            source={require("../assets/rectangle-123141.png")}
-          />
-          <Text style={[styles.text3, styles.textFlexBox1]}>다시하기</Text>
+
           {recording ? (
-          <Button
-            title="Stop Recording"
-            onPress={stopRecording}
-          />
+           <Pressable onPress={stopRecording}>
+              <Image
+              style={[styles.micIcon, styles.text1Position]}
+              contentFit="cover"
+              source={require("../assets/mic-icon.png")}/>  
+            <Text>  </Text>
+          </Pressable>
         ) : (
-          <Button
-            title="Start Recording"
-            onPress={startRecording}
-          />
+          <Pressable onPress={startRecording}>
+             <Image
+            style={[ styles.micClose]}
+            contentFit="cover"
+            source={require("../assets/mic-close.png")}/>      
+          
+          <Text>  </Text>
+        </Pressable>
         )}
-        </View>
-      </View>
+        
+      
       <View style={styles.repeatMessage}>
         <Image
           style={styles.frameIcon}
@@ -218,6 +220,32 @@ const VoiceGame = () => {
           source={require("../assets/egg1.png")}
         />
       </View>
+      
+      <Modal isOpen={showModal}>
+        <View style={styles.messageBox}>
+          <Text style={[styles.text2, styles.textTypo]} >{modalMessage}</Text>
+           <View style={[styles.nextMission, styles.missionLayout1]}>
+          <Image
+            style={[styles.nextMissionIcon, styles.missionLayout]}
+            contentFit="cover"
+            source={require("../assets/next-mission.png")}
+          />
+          <Text style={[styles.text3, styles.textFlexBox1]}>다음문제</Text>
+        </View>
+        <View style={[styles.retryMission, styles.missionLayout1]}>
+          <Pressable onPress={() => setShowModal(false)}>
+          <Image
+            style={[styles.retryMissionChild, styles.missionLayout]}
+            contentFit="cover"
+            source={require("../assets/rectangle-123141.png")}
+            
+          />
+          <Text style={[styles.text3, styles.textFlexBox1]}>다시하기</Text>
+          </Pressable>
+          </View>
+          
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -225,6 +253,22 @@ const VoiceGame = () => {
 const styles = StyleSheet.create({
   textFlexBox1: {
     textAlign: "center",
+    position: "absolute",
+  },
+  micClose: {
+    top: 626,
+    left: 126,
+    width: 148,
+    height: 148,
+    position: "absolute",
+  },
+  micIcon: {
+    top: 595,
+    width: 210,
+    height: 210,
+  }, 
+  text1Position: {
+    left: 95,
     position: "absolute",
   },
   textFlexBox: {
@@ -273,8 +317,8 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   text2: {
-    top: 37,
-    left: 64,
+    top: 45,
+    left: 75,
     color: Color.tomato_100,
     textAlign: "center",
     position: "absolute",
@@ -306,7 +350,7 @@ const styles = StyleSheet.create({
     left: 31,
   },
   messageBox: {
-    top: 611,
+    top:611,
     left: 28,
     borderRadius: Border.br_41xl,
     backgroundColor: Color.gray,
