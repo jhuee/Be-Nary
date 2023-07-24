@@ -4,13 +4,28 @@ import { Image } from "expo-image";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontSize, FontFamily, Color, Border } from "../GlobalStyles";
+import { Audio } from 'expo-av';
 
 const VoiceTalk: React.FC = () => {
   const [userMessage, setUserMessage] = useState<string>("");
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [aiResponse, setAIResponse] = useState<string>("");
 
   const handleMicPress = async() => {
-    // 음성 인식 라이브러리를 사용하여 사용자의 음성을 입력으로 받음
+    try { //사용자 음성 녹음
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      console.log('Starting recording..');
+      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      setRecording(recording);
+      console.log('Recording started');
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
     // userMessage 상태 업데이트
 
     // OpenAI API를 사용하여 생성형 AI에게 응답 요청
