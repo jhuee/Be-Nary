@@ -15,9 +15,9 @@ const Start = () => {
   const getNickname = async () => {
     try {
       const nickname = await fetchNickname(); // Use "nickname" as the key
-      if (nickname !== null) {
+      if (nickname !== null ) {
         navigation.navigate("Home");
-      } else {
+      } else if (nickname == "" || nickname == null){
         navigation.navigate("nameStart");
       }
     } catch (e: any) {
