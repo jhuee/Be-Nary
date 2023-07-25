@@ -10,9 +10,8 @@ import { fetchNickname } from "./userinfo/nickname";
 const Home = () => {
   const navigation = useNavigation<any>();
   const [nickname, setNickname] = useState<string>(""); 
+  
   //닉네임 가져오기
-
-
   useEffect(() => {
     const getNickname = async () => {
       const nickname = await fetchNickname();

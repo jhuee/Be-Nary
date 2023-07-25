@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { KeyboardAvoidingView,Text, StyleSheet, Pressable, View, TextInput, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
-import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import { Image } from "expo-image";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
