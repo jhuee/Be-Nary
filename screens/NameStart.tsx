@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { KeyboardAvoidingView,Text, StyleSheet, Pressable, View, TextInput } from "react-native";
+import { KeyboardAvoidingView,Text, StyleSheet, Pressable, View, TextInput, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import { Image } from "expo-image";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
@@ -11,10 +11,11 @@ const NameStart = () => {
   const navigation = useNavigation<any>();
 
   //닉네임 저장
- const handleSubmit =  async (key: string, value: any) => {
+  const setNickname = async (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
+    const nickname = event.nativeEvent.text;
     try {
-      const nicKName = JSON.stringify(value);
-      await AsyncStorage.setItem(key, nicKName);
+      await AsyncStorage.setItem('nickname', nickname);
+      console.log('Nickname saved:', nickname);
     } catch (e: any) {
       console.error(e.message);
     }
@@ -106,7 +107,7 @@ const NameStart = () => {
             placeholder="닉네임"
             autoCapitalize="words"
             textContentType="nickname"
-            //onSubmitEditing={handleSubmit}
+            onSubmitEditing={setNickname}
           />
         </View>
       </View>

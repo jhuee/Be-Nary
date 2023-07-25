@@ -9,6 +9,7 @@ import VoiceTalk from "./screens/VoiceTalk";
 import Home from "./screens/Home";
 import NameStart from "./screens/NameStart";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
+import { NativeBaseProvider } from 'native-base';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ const App = () => {
   const [hideSplashScreen, setHideSplashScreen] = React.useState(false);
   const [fontsLoaded, error] = useFonts({
     Jua_regular: require("./assets/fonts/Jua_regular.ttf"),
+    SF_Pro_bold: require("./assets/fonts/SF_Pro_bold.ttf"),
   });
 
   React.useEffect(() => {
@@ -30,6 +32,7 @@ const App = () => {
 
   return (
     <>
+    <NativeBaseProvider>
       <NavigationContainer>
         {hideSplashScreen ? (
           <Stack.Navigator
@@ -69,6 +72,7 @@ const App = () => {
           </Stack.Navigator>
         ) : null}
       </NavigationContainer>
+      </NativeBaseProvider>
     </>
   );
 };

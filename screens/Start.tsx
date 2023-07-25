@@ -1,12 +1,30 @@
-import * as React from "react";
+// Start.tsx
+import React, { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import { useNavigation } from "@react-navigation/core";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchNickname } from "./userinfo/nickname";
 
 const Start = () => {
   const navigation = useNavigation<any>();
+
+  //닉네임 가져오기
+  const getNickname = async () => {
+    try {
+      const nickname = await fetchNickname(); // Use "nickname" as the key
+      if (nickname !== null) {
+        navigation.navigate("Home");
+      } else {
+        navigation.navigate("nameStart");
+      }
+    } catch (e: any) {
+      console.log(e.message);
+    }
+  };
+
   return (
     <LinearGradient
       style={styles.start}
@@ -22,7 +40,7 @@ const Start = () => {
       <Text style={[styles.benary, styles.textTypo]}>BeNary</Text>
       <Text style={[styles.text, styles.textTypo]}>{`어린이를 위한 
 발음교정 게임`}</Text>
-      <Pressable onPress={() => navigation.navigate("NameStart")}>
+      <Pressable onPress={getNickname}>
         <View style={[styles.startBtn, styles.startLayout]}>
           <Image
             style={[styles.startBtnIcon, styles.startLayout]}
