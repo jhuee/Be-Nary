@@ -6,6 +6,7 @@ import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import { fetchNickname } from "./userinfo/nickname";
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
@@ -13,7 +14,16 @@ const VoiceGame = () => {
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(''); // 모달에 표시할 메시지 상태
+  const [nickname, setNickname] = useState<string>("");  //닉네임 세팅
+  const getNickname = async () => {
+    const nickname = await fetchNickname();
+    if (nickname) {
+      setNickname(nickname);
+      console.log("닉네임" + nickname);
+    }
+  };
 
+  getNickname();
   useEffect(() => {
   function textToSpeech(_text : string) {
     const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
@@ -152,7 +162,7 @@ const VoiceGame = () => {
       // responseData에는 API 응답 데이터가 들어 있을 것입니다.
 
         if(parseFloat(responseData.return_object.score)>2.0){
-          setModalMessage('하연~ 참 잘했어요!');
+          setModalMessage(`${nickname}~ 참 잘했어요!`);
         } else {
           setModalMessage('아쉬워요😥'+'\n'+
           '다시 한 번 해볼까요?');
