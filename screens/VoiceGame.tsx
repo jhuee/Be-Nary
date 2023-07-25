@@ -13,6 +13,96 @@ const VoiceGame = () => {
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(''); // 모달에 표시할 메시지 상태
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+ 
+  
+  const questions = [
+    { question: "사과", icon: "🍎", backgroundColor: Color.tomato_200 , circle : require("../assets/background-circle.png")},
+    { question: "포도", icon: "🍇", backgroundColor: "#8347D0" , circle : require("../assets/purpleCircle.png")},
+    { question: "요정", icon: "🧚🏻‍♀", backgroundColor: "#BBFF92", circle : require("../assets/greenCircle.png") },
+    { question: "원숭이", icon: "🐵", backgroundColor: "#FF9F46" , circle : require("../assets/orangeCircle.png")},
+    { question: "토끼", icon: "🐰", backgroundColor: "#81CAFF" , circle : require("../assets/lightblueCircle.png")},
+    { question: "병아리", icon: "🐥", backgroundColor: "#FFD542" , circle : require("../assets/yellowCircle.png")},
+    { question: "사랑", icon: "❤", backgroundColor: "#FF9BBF" , circle : require("../assets/pinkCircle.png")},
+  ];
+  const [currentBackgroundColor, setCurrentBackgroundColor] = useState(questions[0].backgroundColor);
+  const [currentCircle, setCurrentCircle] = useState(questions[0].circle);
+
+  // const currentBackgroundColor = questions[currentQuestionIndex].backgroundColor;
+  
+
+  const handleNextQuestion = () => {
+    const nextIndex = (currentQuestionIndex + 1) % questions.length;
+    setCurrentQuestionIndex(nextIndex);
+    setCurrentBackgroundColor(questions[nextIndex].backgroundColor);
+    setCurrentCircle(questions[nextIndex].circle);
+    textToSpeech(questions[nextIndex].question); // 다음 단어 출력
+  };
+  let record = new Audio.Recording();
+
+  const [textToSpeech, setTextToSpeech] = useState(() => (_text : string) => {
+    const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
+    const data = {
+      
+      input: {
+        text: _text,
+      },
+      voice: {
+        languageCode: 'ko-KR',
+        name: 'ko-KR-Neural2-B',
+        ssmlGender: 'FEMALE',
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+        pitch : 2.8,
+        speakingRate: 0.90
+      },
+    };
+    const otherparam = {
+      headers: {
+        "content-type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify(data),
+      method: "POST",
+    };
+    // 사운드 생성
+    fetch(url, otherparam)
+      .then((data) => {
+        return data.json();   
+      })
+      .then((res) => {
+        console.log(res.audioContent); // base64
+        saveTTS(res.audioContent)
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+      const fileUri = `${FileSystem.documentDirectory}output.mp3`;
+      const saveTTS = async (audioContent: Uint8Array): Promise<void> => {
+    
+        await FileSystem.writeAsStringAsync(fileUri, audioContent.toString(), {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        try {
+          const { sound } = await Audio.Sound.createAsync(
+            { uri: fileUri },
+            { shouldPlay: true }
+          );
+          setSound(sound);
+          console.log('음성 재생 시작');
+    
+          setTimeout(() => {
+            startRecording();
+          }, 2000); // 2초 뒤 녹음 시작
+    
+        } catch (error) {
+          console.error('음성 재생 오류:', error);
+        }
+      };
+  });
+
 
   useEffect(() => {
   function textToSpeech(_text : string) {
@@ -43,7 +133,7 @@ const VoiceGame = () => {
     // 사운드 생성
     fetch(url, otherparam)
       .then((data) => {
-        return data.json();
+        return data.json();   
       })
       .then((res) => {
         console.log(res.audioContent); // base64
@@ -53,7 +143,7 @@ const VoiceGame = () => {
         console.log(error);
       });
   }
-  textToSpeech('사과');
+  textToSpeech(questions[currentQuestionIndex].question);
   const fileUri = `${FileSystem.documentDirectory}output.mp3`;
   const saveTTS = async (audioContent: Uint8Array): Promise<void> => {
 
@@ -112,16 +202,16 @@ const VoiceGame = () => {
       const uri = recording.getURI();
       
   // API로 녹음된 오디오를 보내고 발음 평가를 수행합니다.
-      sendPronunciationEvaluation(uri);
+      sendPronunciationEvaluation(uri, questions[currentQuestionIndex].question);
       console.log('Recording stopped and stored at', uri);
     }
   };
 
-  const sendPronunciationEvaluation = async (audioUri : any) => {
+  const sendPronunciationEvaluation = async (audioUri : any, text : string) => {
     const openApiURL = 'http://aiopen.etri.re.kr:8000/WiseASR/PronunciationKor'; // 한국어
     const accessKey = 'ab9bf69a-2837-4014-86c7-29d836f1809c';
     const languageCode = 'korean';
-    const script = '사과';
+    const script = text;
   
     try {
       const audioContent = await FileSystem.readAsStringAsync(audioUri, {
@@ -169,21 +259,21 @@ const VoiceGame = () => {
   
   
   return (
-    <View style={styles.voiceGame}>
+    <View style={[styles.voiceGame, { backgroundColor: currentBackgroundColor }]}>
       <Image
         style={styles.backgroundCircleIcon}
         contentFit="cover"
-        source={require("../assets/background-circle.png")}
+        source={questions[currentQuestionIndex].circle}
       />
-      <Text style={[styles.text, styles.textFlexBox1]}>🍎</Text>
-      <Text style={[styles.text1, styles.textFlexBox]} >사과</Text>
+      <Text style={[styles.text, styles.textFlexBox1]}>{questions[currentQuestionIndex].icon}</Text>
+      <Text style={[styles.text1, styles.textFlexBox]} >{questions[currentQuestionIndex].question}</Text>
 
           {recording ? (
            <Pressable onPress={stopRecording}>
               <Image
               style={[styles.micIcon, styles.text1Position]}
               contentFit="cover"
-              source={require("../assets/mic-icon.png")}/>  
+              source={require("../assets/micIcon.png")}/>  
             <Text>  </Text>
           </Pressable>
         ) : (
@@ -191,7 +281,7 @@ const VoiceGame = () => {
              <Image
             style={[ styles.micClose]}
             contentFit="cover"
-            source={require("../assets/mic-close.png")}/>      
+            source={require("../assets/micClose.png")}/>      
           
           <Text>  </Text>
         </Pressable>
@@ -225,15 +315,22 @@ const VoiceGame = () => {
         <View style={styles.messageBox}>
           <Text style={[styles.text2, styles.textTypo]} >{modalMessage}</Text>
            <View style={[styles.nextMission, styles.missionLayout1]}>
+           <Pressable onPress={() => {
+            handleNextQuestion()
+            setShowModal(false)}}>
           <Image
             style={[styles.nextMissionIcon, styles.missionLayout]}
             contentFit="cover"
             source={require("../assets/next-mission.png")}
           />
           <Text style={[styles.text3, styles.textFlexBox1]}>다음문제</Text>
+          </Pressable>
         </View>
         <View style={[styles.retryMission, styles.missionLayout1]}>
-          <Pressable onPress={() => setShowModal(false)}>
+          <Pressable onPress={() => {
+            setShowModal(false)
+            textToSpeech(questions[currentQuestionIndex].question);
+            startRecording()}}>
           <Image
             style={[styles.retryMissionChild, styles.missionLayout]}
             contentFit="cover"
@@ -256,7 +353,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   micClose: {
-    top: 626,
+    top: 533,
     left: 126,
     width: 148,
     height: 148,
@@ -266,13 +363,16 @@ const styles = StyleSheet.create({
     top: 595,
     width: 210,
     height: 210,
+    left: 95,
+    position: 'absolute'
   }, 
   text1Position: {
-    left: 95,
+    textAlign:'center',
+    top: 500,
     position: "absolute",
   },
   textFlexBox: {
-    textAlign: "left",
+    textAlign: "center",
     color: Color.white,
   },
   textTypo: {
@@ -312,9 +412,8 @@ const styles = StyleSheet.create({
     top: 321,
     fontSize: FontSize.size_101xl,
     fontFamily: FontFamily.juaRegular,
-    textAlign: "left",
-    left: 95,
-    position: "absolute",
+    textAlign: "center",
+    position: "relative",
   },
   text2: {
     top: 45,
