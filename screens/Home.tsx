@@ -4,7 +4,6 @@ import { Image } from "expo-image";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchNickname } from "./userinfo/nickname";
 
 const Home = () => {
@@ -18,6 +17,7 @@ const Home = () => {
       const nickname = await fetchNickname();
       if (nickname) {
         setNickname(nickname);
+        console.log("닉네임" + nickname);
       }
     };
   
