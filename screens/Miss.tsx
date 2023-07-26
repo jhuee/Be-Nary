@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
-import { fetchNickname } from "./userinfo/nickname";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Miss = () => {
   const navigation = useNavigation<any>();
@@ -13,7 +13,7 @@ const Miss = () => {
   //닉네임 가져오기
   useEffect(() => {
     const getNickname = async () => {
-      const nickname = await fetchNickname();
+      const nickname = await AsyncStorage.getItem("nickname")
       if (nickname) {
         setNickname(nickname);
       }
@@ -21,7 +21,6 @@ const Miss = () => {
   
     getNickname();
   }, []);
-
 
   return (
     <LinearGradient

@@ -1,13 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
 
 //닉네임 불러오기
 export const fetchNickname = async () => {
   try {
     const nickname = await AsyncStorage.getItem("nickname");
     if (nickname !== null) {
-      const data = JSON.parse(nickname);
-      return data;
+      const nicknames = JSON.parse(nickname);
+      return nicknames;
     }
   } catch (e: any) {
     console.log(e.message);

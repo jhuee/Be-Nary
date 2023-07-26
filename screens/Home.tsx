@@ -4,20 +4,22 @@ import { Image } from "expo-image";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
-import { fetchNickname } from "./userinfo/nickname";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Home = () => {
   const navigation = useNavigation<any>();
   const [nickname, setNickname] = useState<string>(""); 
+
   //닉네임 가져오기
-
-
   useEffect(() => {
     const getNickname = async () => {
-      const nickname = await fetchNickname();
+      const nickname = await AsyncStorage.getItem("nickname");
       if (nickname) {
         setNickname(nickname);
-        console.log("닉네임" + nickname);
+        console.log("홈페이지 닉네임 있음" + nickname);
+      }
+      else {
+        console.log("닉네임 없음")
       }
     };
   
