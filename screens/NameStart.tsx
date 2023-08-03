@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { KeyboardAvoidingView,Text, StyleSheet, Pressable, View, TextInput, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
-import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import { Image } from "expo-image";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -10,12 +9,12 @@ const NameStart = () => {
 
   const navigation = useNavigation<any>();
 
-  //닉네임 저장
+  //닉네임 저장 => 버튼 클릭 시 닉네임이 저장됨
   const setNickname = async (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
     const nickname = event.nativeEvent.text;
     try {
       await AsyncStorage.setItem('nickname', nickname);
-      console.log('Nickname saved:', nickname);
+      console.log('닉네임 설정:', nickname);
     } catch (e: any) {
       console.error(e.message);
     }

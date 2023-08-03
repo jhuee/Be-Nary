@@ -1,12 +1,26 @@
-import * as React from "react";
+import React, {useEffect, useState} from "react";
 import { View, StyleSheet, Text, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Miss = () => {
   const navigation = useNavigation<any>();
+  const [nickname, setNickname] = useState<string>(""); 
+  
+  //닉네임 가져오기
+  useEffect(() => {
+    const getNickname = async () => {
+      const nickname = await AsyncStorage.getItem("nickname")
+      if (nickname) {
+        setNickname(nickname);
+      }
+    };
+  
+    getNickname();
+  }, []);
 
   return (
     <LinearGradient
@@ -23,7 +37,7 @@ const Miss = () => {
       </View>
       <View style={styles.backGroundCirclec} />
       <Text style={[styles.text, styles.textClr]}># 많이 보고 싶었어요</Text>
-      <Text style={[styles.text1, styles.textTypo]}>{`주인님! 많이 보고 싶었어요
+      <Text style={[styles.text1, styles.textTypo]}>{`${nickname}! 많이 보고 싶었어요
 우리 다시 발음 연습해요`}</Text>
       <Pressable style={[styles.startBtn, styles.wrapperLayout]}>
         <Pressable

@@ -6,7 +6,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import { useNavigation } from "@react-navigation/core";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchNickname } from "./userinfo/nickname";
 
 const Start = () => {
   const navigation = useNavigation<any>();
@@ -14,11 +13,11 @@ const Start = () => {
   //닉네임 가져오기
   const getNickname = async () => {
     try {
-      const nickname = await fetchNickname(); // Use "nickname" as the key
-      if (nickname !== null) {
+      const nickname = await AsyncStorage.getItem("nickname")
+      if (nickname) {
         navigation.navigate("Home");
       } else {
-        navigation.navigate("nameStart");
+        navigation.navigate("NameStart");
       }
     } catch (e: any) {
       console.log(e.message);
