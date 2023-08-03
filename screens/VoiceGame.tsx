@@ -375,33 +375,35 @@ const VoiceGame = () => {
             style={[styles.micIcon, styles.text1Position]}
             contentFit="cover"
             source={require("../assets/micIcon.png")}
-          />
-          <Text> </Text>
-        </Pressable>
-      ) : (
-        <Pressable onPress={startRecording}>
-          {/* <Image
-            style={[styles.micClose]}
-            contentFit="cover"
-            source={require("../assets/micClose.png")}
-          /> */}
-
-
-          <Text style={[styles.text, styles.text1Position]}> 준비 </Text>
-        </Pressable>
-      )}
-
-      <View style={styles.repeatMessage}>
+            />
+          <View style={styles.repeatMessage}>
         <Image
           style={styles.frameIcon}
           contentFit="cover"
           source={require("../assets/frame.png")}
         />
         <Text style={[styles.text5, styles.textTypo]}>
-          발음을 듣고 따라해보세요
+         천천히 따라해보세요
         </Text>
       </View>
-      <View style={[styles.timebar, styles.timebarLayout]}>
+        </Pressable>
+           
+      ) : (
+        <Pressable onPress={startRecording}>
+          <View style={styles.repeatMessage}>
+        <Image
+          style={styles.frameIcon}
+          contentFit="cover"
+          source={require("../assets/frame.png")}
+        />
+        <Text style={[styles.text5, styles.textTypo]}>
+          발음을 잘 들어보세요!
+        </Text>
+      </View>
+        </Pressable>
+      )}
+
+      {/* <View style={[styles.timebar, styles.timebarLayout]}>
         <Image
           style={styles.frameIcon1}
           contentFit="cover"
@@ -412,7 +414,7 @@ const VoiceGame = () => {
           contentFit="cover"
           source={require("../assets/egg1.png")}
         />
-      </View>
+      </View> */}
       
       <Modal isOpen={showModal}>
         <View style={styles.messageBox}>
@@ -571,11 +573,11 @@ const styles = StyleSheet.create({
   text5: {
     marginLeft: -260,
     textAlign: "left",
-    color: Color.white,
+    color: "#FFB800",
     flex: 1,
   },
   repeatMessage: {
-    top: 116,
+
     left: 38,
     width: 381,
     height: 62,
