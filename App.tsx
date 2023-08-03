@@ -8,6 +8,7 @@ import VoiceGame from "./screens/VoiceGame";
 import VoiceTalk from "./screens/VoiceTalk";
 import Home from "./screens/Home";
 import NameStart from "./screens/NameStart";
+import LevelUp from "./screens/LevelUp";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
 import { NativeBaseProvider } from 'native-base';
 
@@ -67,6 +68,11 @@ const App = () => {
             <Stack.Screen
               name="NameStart"
               component={NameStart}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="LevelUp"
+              component={LevelUp}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

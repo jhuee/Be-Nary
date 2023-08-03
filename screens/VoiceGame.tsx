@@ -8,6 +8,9 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import { fetchNickname } from "./userinfo/nickname";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+
+
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
 const VoiceGame = () => {
@@ -15,7 +18,33 @@ const VoiceGame = () => {
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
+  const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기 
   const [nickname, setNickname] = useState<string>(""); //닉네임 세팅
+  const [level, setLevel] = useState<number>(1); //레벨
+  const navigation = useNavigation<any>();
+
+  const [gameState, setGameState] = useState({
+    currentQuestionIndex: 0,
+    level : 0,
+    showModal: false,
+    modalMessage: '',
+  });
+
+  const getLevel = async () => {
+    try {
+      const levelValue = await AsyncStorage.getItem("level");
+      if (levelValue !== null) {
+        setLevel(Number(levelValue));
+        console.log("저장된 레벨:", levelValue);
+      }
+    } catch (error) {
+      console.error("레벨 정보 불러오기 오류:", error);
+    }
+  };
+
+
+
+
   const getNickname = async () => {
     const nickname = await AsyncStorage.getItem("nickname");
     if (nickname) {
@@ -75,16 +104,27 @@ const VoiceGame = () => {
   );
   const [currentCircle, setCurrentCircle] = useState(questions[0].circle);
 
-  // const currentBackgroundColor = questions[currentQuestionIndex].backgroundColor;
 
-  const handleNextQuestion = () => {
-    const nextIndex = (currentQuestionIndex + 1) % questions.length;
-    setCurrentQuestionIndex(nextIndex);
-    setCurrentBackgroundColor(questions[nextIndex].backgroundColor);
-    setCurrentCircle(questions[nextIndex].circle);
-    textToSpeech(questions[nextIndex].question); // 다음 단어 출력
+  const handleNextQuestion = async () =>  {
+    if (currentQuestionIndex === questions.length - 1) {
+      try {
+        await AsyncStorage.setItem("level", String(level + 1));
+        console.log("레벨 정보가 저장되었습니다.");
+      } catch (error) {
+        console.error("레벨 정보 저장 오류:", error); 
+      }
+      navigation.navigate('LevelUp'); // Le velUp 화면으로 이동
+    } else {
+
+
+      const nextIndex = (currentQuestionIndex + 1) % questions.length;
+      setCurrentQuestionIndex(nextIndex);
+      setCurrentBackgroundColor(questions[nextIndex].backgroundColor);
+      setCurrentCircle(questions[nextIndex].circle);
+      textToSpeech(questions[nextIndex].question); // 다음 단어 출력
+  
+    }
   };
-  let record = new Audio.Recording();
 
   const [textToSpeech, setTextToSpeech] = useState(() => (_text: string) => {
     const url =
@@ -146,6 +186,7 @@ const VoiceGame = () => {
       }
     };
   });
+  getLevel(); // 앱이 시작될 때 저장된 레벨을 불러옴
 
   getNickname();
   useEffect(() => {
@@ -204,7 +245,7 @@ const VoiceGame = () => {
 
         setTimeout(() => {
           startRecording();
-        }, 2000); // 2초 뒤 녹음 시작
+        }, 1500); // 1.5초 뒤 녹음 시작
       } catch (error) {
         console.error("음성 재생 오류:", error);
       }
@@ -245,7 +286,7 @@ const VoiceGame = () => {
     if (recording) {
       const uri = recording.getURI();
 
-      // API로 녹음된 오디오를 보내고 발음 평가를 수행합니다.
+      // API로 녹음된 오디오를 보내고 발음 평가를 수행
       sendPronunciationEvaluation(
         uri,
         questions[currentQuestionIndex].question
@@ -285,13 +326,27 @@ const VoiceGame = () => {
       const responseData = await response.json();
       console.log("Response Data:", responseData);
 
-      // 이후에 응답 데이터를 처리하고 발음 평가 결과를 화면에 표시하는 로직을 추가할 수 있습니다.
-      // responseData에는 API 응답 데이터가 들어 있을 것입니다.
-
-      if (parseFloat(responseData.return_object.score) > 2.0) {
+      // 점수에 따라 ModalMessage 설정
+      if (parseFloat(responseData.return_object.score) > 1.7) {
         setModalMessage(`${nickname}~ 참 잘했어요!`);
+        if(currentQuestionIndex === questions.length - 1) {
+          setLevel((prevLevel) => prevLevel + 1);
+          setQuestionSeq("그만하기")          
+          setShowModal(true);
+          console.log(level)
+        } else {
+          setQuestionSeq("다음문제")
+        }
       } else {
         setModalMessage("아쉬워요😥" + "\n" + "다시 한 번 해볼까요?");
+        if(currentQuestionIndex === questions.length - 1) {
+          setLevel((prevLevel) => prevLevel + 1);
+          setQuestionSeq("그만하기")          
+          setShowModal(true);
+          console.log(level)
+        } else {
+          setQuestionSeq("다음문제")
+        }
       }
       setShowModal(true);
     } catch (error) {
@@ -325,13 +380,14 @@ const VoiceGame = () => {
         </Pressable>
       ) : (
         <Pressable onPress={startRecording}>
-          <Image
+          {/* <Image
             style={[styles.micClose]}
             contentFit="cover"
             source={require("../assets/micClose.png")}
-          />
+          /> */}
 
-          <Text> </Text>
+
+          <Text style={[styles.text, styles.text1Position]}> 준비 </Text>
         </Pressable>
       )}
 
@@ -357,7 +413,7 @@ const VoiceGame = () => {
           source={require("../assets/egg1.png")}
         />
       </View>
-
+      
       <Modal isOpen={showModal}>
         <View style={styles.messageBox}>
           <Text style={[styles.text2, styles.textTypo]}>{modalMessage}</Text>
@@ -372,7 +428,7 @@ const VoiceGame = () => {
                 contentFit="cover"
                 source={require("../assets/next-mission.png")}
               />
-              <Text style={[styles.text3, styles.textFlexBox1]}>다음문제</Text>
+              <Text style={[styles.text3, styles.textFlexBox1]}>{questionSeq}</Text>
             </Pressable>
           </View>
           <View style={[styles.retryMission, styles.missionLayout1]}>

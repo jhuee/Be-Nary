@@ -15,7 +15,7 @@ const Start = () => {
     try {
       const nickname = await AsyncStorage.getItem("nickname")
       if (nickname) {
-        navigation.navigate("Home");
+        navigation.navigate("LevelUp");
       } else {
         navigation.navigate("NameStart");
       }
