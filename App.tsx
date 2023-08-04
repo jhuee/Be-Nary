@@ -10,6 +10,7 @@ import Home from "./screens/Home";
 import NameStart from "./screens/NameStart";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
 import { NativeBaseProvider } from 'native-base';
+import "react-native-url-polyfill/auto";
 
 const Stack = createNativeStackNavigator();
 

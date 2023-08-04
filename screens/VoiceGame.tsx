@@ -6,7 +6,6 @@ import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from "react";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
-import { fetchNickname } from "./userinfo/nickname";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
@@ -16,11 +15,11 @@ const VoiceGame = () => {
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
   const [nickname, setNickname] = useState<string>(""); //닉네임 세팅
+  
   const getNickname = async () => {
     const nickname = await AsyncStorage.getItem("nickname");
     if (nickname) {
       setNickname(nickname);
-      console.log("닉네임" + nickname);
     }
   };
 

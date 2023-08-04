@@ -4,10 +4,9 @@ import { Configuration, OpenAIApi } from "openai";
 import "react-native-url-polyfill/auto";
 
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: process.env.REACT_APP_OPEN_AI_KEY,
 });
 const openai = new OpenAIApi(configuration);
-
 export default async function openAI(text: string) {
   try {
     const response = await openai.createChatCompletion({
@@ -15,7 +14,7 @@ export default async function openAI(text: string) {
       messages: [
         {
           role: "system",
-          content: `너의 이름은 구름이야 . 너는 어린이이고 나도 어린이이야. 그러니까 우리는 편하게 말을 해야돼. 그리고 나는 언어장애를 가지고 있어. 나의 발음이 이상하면, 너가 수정해줘.`,
+          content: `너의 이름은 구름이야 . 너는 어린이이고, 나도 어린이이야. 그러니까 우리는 편하게 말을 해야돼. 그리고 나는 언어장애를 가지고 있어. 나의 발음이 이상하면, 너가 수정해줘. 너는 나의 선생님이야`,
         },
         { role: "user", content: text },
       ],
