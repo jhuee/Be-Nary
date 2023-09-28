@@ -4,7 +4,7 @@ import { Configuration, OpenAIApi } from "openai";
 import "react-native-url-polyfill/auto";
 
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: ""
 });
 const openai = new OpenAIApi(configuration);
 export default async function openAI(text: string) {
