@@ -21,45 +21,40 @@ const NameStart = () => {
   const navigation = useNavigation<any>();
   const userCollection = collection(dbUser, "user");
 
-  let nickname: string = '';
+  let nickname: string = "";
 
-
-  
-  const setNickname = async (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
+  const setNickname = async (
+    event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
+  ) => {
     nickname = event.nativeEvent.text;
     if (await nicknameCheck()) {
-    try {
-      await AsyncStorage.setItem("nickname", nickname);
-      console.log("닉네임 설정:", nickname);
-    } catch (e: any) {
-      console.error(e.message);
+      try {
+        await AsyncStorage.setItem("nickname", nickname);
+      } catch (e: any) {
+        console.error(e.message);
+      }
     }
   };
-}
 
-
-const nicknameCheck = async () => { //닉네임 중복체크함수
-  const q = query(userCollection, where("nickname", "==", nickname));
-  const querySnapshot = await getDocs(q);
+  const nicknameCheck = async () => {
+    //닉네임 중복체크함수
+    const q = query(userCollection, where("nickname", "==", nickname));
+    const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
       return true;
     } else {
-      console.log("Duplicate nickname found");
       return false;
     }
   };
 
-
-
   const dbNickname = async () => {
-
-      try {
-        const docRef = await addDoc(userCollection, { nickname, level: 0 });
-        console.log("Document written with ID: ", docRef.id);
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
+    try {
+      const docRef = await addDoc(userCollection, { nickname, level: 0 });
+      console.log("회원가입 완료 ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   };
 
   const goHome = async () => {
@@ -71,100 +66,98 @@ const nicknameCheck = async () => { //닉네임 중복체크함수
     }
   };
 
-
-
-return (
-  <KeyboardAvoidingView style={styles.nameStart}>
-    <Text style={[styles.beNary, styles.textTypo]}>Be Nary</Text>
-    <Image
-      style={styles.nameStartChild}
-      contentFit="cover"
-      source={require("../assets/ellipse-121.png")}
-    />
-    <Image
-      style={[styles.nameStartItem, styles.childLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-13.png")}
-    />
-    <Image
-      style={[styles.nameStartInner, styles.childLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-13.png")}
-    />
-    <Image
-      style={[styles.ellipseIcon, styles.childLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-13.png")}
-    />
-    <Image
-      style={[styles.nameStartChild1, styles.nameChildLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-15.png")}
-    />
-    <Image
-      style={[styles.nameStartChild2, styles.nameChildLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-21.png")}
-    />
-    <Image
-      style={styles.nameStartChild3}
-      contentFit="cover"
-      source={require("../assets/ellipse-22.png")}
-    />
-    <Image
-      style={[styles.nameStartChild4, styles.childLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-23.png")}
-    />
-    <Image
-      style={[styles.nameStartChild5, styles.childLayout]}
-      contentFit="cover"
-      source={require("../assets/ellipse-24.png")}
-    />
-    <Text style={[styles.text, styles.textTypo]}>{`안녕! 만나서 반가워요!
-당신의 이름은 무엇인가요?`}</Text>
-    <Pressable style={styles.okBtn} onPress={goHome}>
+  return (
+    <KeyboardAvoidingView style={styles.nameStart}>
+      <Text style={[styles.beNary, styles.textTypo]}>Be Nary</Text>
       <Image
-        style={[styles.okBtnIcon, styles.iconLayout]}
+        style={styles.nameStartChild}
         contentFit="cover"
-        source={require("../assets/ok-btn.png")}
+        source={require("../assets/ellipse-121.png")}
       />
-      <Text style={[styles.text1, styles.textTypo]}>확인</Text>
-    </Pressable>
-    <Image
-      style={styles.eggIcon}
-      contentFit="cover"
-      source={require("../assets/egg3.png")}
-    />
-    <View style={[styles.input, styles.inputLayout]}>
-      <View style={[styles.input1, styles.inputLayout]}>
+      <Image
+        style={[styles.nameStartItem, styles.childLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-13.png")}
+      />
+      <Image
+        style={[styles.nameStartInner, styles.childLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-13.png")}
+      />
+      <Image
+        style={[styles.ellipseIcon, styles.childLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-13.png")}
+      />
+      <Image
+        style={[styles.nameStartChild1, styles.nameChildLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-15.png")}
+      />
+      <Image
+        style={[styles.nameStartChild2, styles.nameChildLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-21.png")}
+      />
+      <Image
+        style={styles.nameStartChild3}
+        contentFit="cover"
+        source={require("../assets/ellipse-22.png")}
+      />
+      <Image
+        style={[styles.nameStartChild4, styles.childLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-23.png")}
+      />
+      <Image
+        style={[styles.nameStartChild5, styles.childLayout]}
+        contentFit="cover"
+        source={require("../assets/ellipse-24.png")}
+      />
+      <Text style={[styles.text, styles.textTypo]}>{`안녕! 만나서 반가워요!
+당신의 이름은 무엇인가요?`}</Text>
+      <Pressable style={styles.okBtn} onPress={goHome}>
         <Image
-          style={[styles.inputChild, styles.childLayout]}
+          style={[styles.okBtnIcon, styles.iconLayout]}
           contentFit="cover"
-          source={require("../assets/ellipse-25.png")}
+          source={require("../assets/ok-btn.png")}
         />
-        <Image
-          style={[styles.ellipseIcon1, styles.nameChildLayout]}
-          contentFit="cover"
-          source={require("../assets/ellipse.png")}
-        />
-        <Image
-          style={[styles.nameInputIcon, styles.iconLayout]}
-          contentFit="cover"
-          source={require("../assets/rectangle-12314.png")}
-        />
-        <TextInput
-          style={styles.textinput}
-          placeholder="닉네임"
-          autoCapitalize="words"
-          textContentType="nickname"
-          onSubmitEditing={setNickname}
-        />
+        <Text style={[styles.text1, styles.textTypo]}>확인</Text>
+      </Pressable>
+      <Image
+        style={styles.eggIcon}
+        contentFit="cover"
+        source={require("../assets/egg3.png")}
+      />
+      <View style={[styles.input, styles.inputLayout]}>
+        <View style={[styles.input1, styles.inputLayout]}>
+          <Image
+            style={[styles.inputChild, styles.childLayout]}
+            contentFit="cover"
+            source={require("../assets/ellipse-25.png")}
+          />
+          <Image
+            style={[styles.ellipseIcon1, styles.nameChildLayout]}
+            contentFit="cover"
+            source={require("../assets/ellipse.png")}
+          />
+          <Image
+            style={[styles.nameInputIcon, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/rectangle-12314.png")}
+          />
+          <TextInput
+            style={styles.textinput}
+            placeholder="닉네임"
+            autoCapitalize="words"
+            textContentType="nickname"
+            onSubmitEditing={setNickname}
+          />
+        </View>
       </View>
-    </View>
-  </KeyboardAvoidingView>
-);
-}
+    </KeyboardAvoidingView>
+  );
+};
 
 const styles = StyleSheet.create({
   textTypo: {
