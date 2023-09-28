@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 
-const LevelUP = () => {
+const levelUP = () => {
   const navigation = useNavigation<any>();
 
   return (
@@ -63,7 +63,7 @@ const LevelUP = () => {
       <Text style={[styles.text, styles.textTypo]}>{`구름이가 
 성장했어요!`}</Text>
       <Pressable
-        style={styles.okBtn}
+        style={[styles.okBtn, styles.btnLayout]}
         onPress={() => navigation.navigate("Home")}>
         <Image
           style={[styles.okBtnIcon, styles.btnLayout]}
@@ -71,7 +71,6 @@ const LevelUP = () => {
           source={require("../assets/ok-btn.png")}
         />
         <Text style={styles.text1}>확인</Text>
-        
       </Pressable>
       <Image
         style={styles.eggIcon}
@@ -104,11 +103,10 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_9xl,
     textAlign: "center",
     fontFamily: FontFamily.juaRegular,
-    left: "63%" ,
+    left: "50%",
     position: "absolute",
   },
   btnLayout: {
-    borderRadius: Border.br_61xl,
     height: 59,
     width: 270,
     position: "absolute",
@@ -169,7 +167,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_61xl,
   },
   text1: {
-    top: 17,
+    top: 12,
     left: 110,
     fontSize: FontSize.size_9xl,
     color: "#a2a2ff",
@@ -202,4 +200,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LevelUP;
+export default levelUP;
