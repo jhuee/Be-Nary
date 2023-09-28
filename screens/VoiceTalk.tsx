@@ -2,20 +2,22 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View, TouchableOpacity, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontSize, FontFamily, Color, Border } from "../GlobalStyles";
 import { Audio } from "expo-av";
-import openAI from "./chatbot/openai";
 import spechtoText from "./speechkit/vito";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 
 const VoiceTalk = () => {
   const [aiResponse, setAIResponse] = useState<string>("");
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
-
-  const [nickname, setNickname] = useState<string>(""); 
 
   //response 가져오기
   useEffect(() => {
@@ -23,15 +25,13 @@ const VoiceTalk = () => {
       const ai = await AsyncStorage.getItem("ai");
       if (ai) {
         setAIResponse(ai);
+      } else {
+        console.log("없음");
       }
-      else {
-        console.log(" 없음")
-      }
-    }; 
-  
+    };
+
     getAI();
   }, [aiResponse]);
-
 
   // 녹음을 시작하는 함수
   async function startRecording() {
@@ -68,29 +68,27 @@ const VoiceTalk = () => {
       const uri = recording.getURI();
       console.log(uri);
       spechtoText(uri);
-     
+
       console.log("녹음 멈춤", uri);
     }
   };
 
-
   return (
     <LinearGradient
-    style={styles.voiceTalk}
-    locations={[0, 1]}
-    colors={["#f9cbbc", "#fcf2d0"]}
-  >
-    <Image
-      style={styles.eggIcon}
-      contentFit="cover"
-      source={require("../assets/egg1.png")}
-    />
-    <Image
-      style={styles.hedsetIcon}
-      contentFit="cover"
-      source={require("../assets/hedset.png")}
-    />
-   
+      style={styles.voiceTalk}
+      locations={[0, 1]}
+      colors={["#f9cbbc", "#fcf2d0"]}>
+      <Image
+        style={styles.eggIcon}
+        contentFit="cover"
+        source={require("../assets/egg1.png")}
+      />
+      <Image
+        style={styles.hedsetIcon}
+        contentFit="cover"
+        source={require("../assets/hedset.png")}
+      />
+
       {recording ? (
         <Pressable onPress={stopRecording}>
           <Image
@@ -98,7 +96,6 @@ const VoiceTalk = () => {
             contentFit="cover"
             source={require("../assets/micIcon.png")}
           />
-        
         </Pressable>
       ) : (
         <Pressable onPress={startRecording}>
@@ -109,38 +106,31 @@ const VoiceTalk = () => {
           />
         </Pressable>
       )}
-        <Text style={styles.text}>{aiResponse}</Text>
+      <Text style={styles.text}>{aiResponse}</Text>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   eggIcon: {
-    top: 260,
+    top: 238,
     left: 23,
     width: 348,
     height: 375,
     position: "absolute",
   },
   hedsetIcon: {
-    top: 240,
+    top: 218,
     left: 57,
     width: 293,
     height: 298,
     position: "absolute",
   },
   micIcon: {
-    top: 700, // Update this value to move the microphone icon down
+    top: 800,
     left: 92,
     width: 210,
     height: 210,
-    position: "absolute",
-  },
-  micClose: {
-    top: 650, // Update this value to move the microphone close icon down
-    left: 126,
-    width: 148,
-    height: 148,
     position: "absolute",
   },
   text: {
@@ -155,7 +145,7 @@ const styles = StyleSheet.create({
   },
   text1Position: {
     textAlign: "center",
-    top: 500,
+    top: 600,
     position: "absolute",
   },
   voiceTalk: {
@@ -169,7 +159,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "transparent",
   },
-
+  micClose: {
+    top: 650,
+    left: 126,
+    width: 148,
+    height: 148,
+    position: "absolute",
+  },
 });
 
 export default VoiceTalk;

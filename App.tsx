@@ -8,9 +8,9 @@ import VoiceGame from "./screens/VoiceGame";
 import VoiceTalk from "./screens/VoiceTalk";
 import Home from "./screens/Home";
 import NameStart from "./screens/NameStart";
-import { View, Text, Pressable, TouchableOpacity } from "react-native";
 import { NativeBaseProvider } from 'native-base';
 import "react-native-url-polyfill/auto";
+import LevelUP from "./screens/LevelUp";
 
 const Stack = createNativeStackNavigator();
 
@@ -68,6 +68,11 @@ const App = () => {
             <Stack.Screen
               name="NameStart"
               component={NameStart}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="LevelUp"
+              component={LevelUP}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
