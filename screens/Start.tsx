@@ -1,5 +1,5 @@
 // Start.tsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Image } from "expo-image";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,6 +23,14 @@ const Start = () => {
       console.log(e.message);
     }
   };
+//닉네임 삭제하기
+// const removeNickname = async () => {
+//   try {
+//     await AsyncStorage.removeItem("nickname")
+//   } catch(e) {
+//   }
+// }
+
 
   return (
     <LinearGradient

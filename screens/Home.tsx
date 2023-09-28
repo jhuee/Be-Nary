@@ -16,12 +16,11 @@ const Home = () => {
       const nickname = await AsyncStorage.getItem("nickname");
       if (nickname) {
         setNickname(nickname);
-        console.log("홈페이지 닉네임 있음" + nickname);
       }
       else {
         console.log("닉네임 없음")
       }
-    };
+    }; 
   
     getNickname();
   }, []);

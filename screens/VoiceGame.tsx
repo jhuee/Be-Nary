@@ -6,7 +6,6 @@ import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from "react";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
-import { fetchNickname } from "./userinfo/nickname";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
@@ -20,6 +19,7 @@ const VoiceGame = () => {
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
   const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기 
   const [nickname, setNickname] = useState<string>(""); //닉네임 세팅
+
   const [level, setLevel] = useState<number>(1); //레벨
   const navigation = useNavigation<any>();
 
@@ -42,14 +42,10 @@ const VoiceGame = () => {
     }
   };
 
-
-
-
   const getNickname = async () => {
     const nickname = await AsyncStorage.getItem("nickname");
     if (nickname) {
       setNickname(nickname);
-      console.log("닉네임" + nickname);
     }
   };
 
@@ -250,6 +246,7 @@ const VoiceGame = () => {
         console.error("음성 재생 오류:", error);
       }
     };
+    setRecording(null);
   }, []);
 
   // 녹음을 시작하는 함수

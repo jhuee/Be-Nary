@@ -1,27 +1,72 @@
-import React from "react";
-import { KeyboardAvoidingView,Text, StyleSheet, Pressable, View, TextInput, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Text,
+  StyleSheet,
+  Pressable,
+  View,
+  TextInput,
+  NativeSyntheticEvent,
+  TextInputSubmitEditingEventData,
+  Alert,
+} from "react-native";
 import { Image } from "expo-image";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/core";
+import { dbUser } from "../firebaseConfig";
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 
 const NameStart = () => {
-
   const navigation = useNavigation<any>();
+  const userCollection = collection(dbUser, "user");
 
-  //닉네임 저장 => 버튼 클릭 시 닉네임이 저장됨
-  const setNickname = async (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
-    const nickname = event.nativeEvent.text;
+  let nickname: string = "";
+
+  const setNickname = async (
+    event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
+  ) => {
+    nickname = event.nativeEvent.text;
+    if (await nicknameCheck()) {
+      try {
+        await AsyncStorage.setItem("nickname", nickname);
+      } catch (e: any) {
+        console.error(e.message);
+      }
+    }
+  };
+
+  const nicknameCheck = async () => {
+    //닉네임 중복체크함수
+    const q = query(userCollection, where("nickname", "==", nickname));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const dbNickname = async () => {
     try {
-      await AsyncStorage.setItem('nickname', nickname);
-      console.log('닉네임 설정:', nickname);
-    } catch (e: any) {
-      console.error(e.message);
+      const docRef = await addDoc(userCollection, { nickname, level: 0 });
+      console.log("회원가입 완료 ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  };
+
+  const goHome = async () => {
+    if (await nicknameCheck()) {
+      await dbNickname();
+      navigation.navigate("Home");
+    } else {
+      Alert.alert("비나리", "중복된 닉네임입니다. 다시 입력해주세요.");
     }
   };
 
   return (
-
     <KeyboardAvoidingView style={styles.nameStart}>
       <Text style={[styles.beNary, styles.textTypo]}>Be Nary</Text>
       <Image
@@ -71,7 +116,7 @@ const NameStart = () => {
       />
       <Text style={[styles.text, styles.textTypo]}>{`안녕! 만나서 반가워요!
 당신의 이름은 무엇인가요?`}</Text>
-      <Pressable style={styles.okBtn} onPress={() => navigation.navigate("Home")}>
+      <Pressable style={styles.okBtn} onPress={goHome}>
         <Image
           style={[styles.okBtnIcon, styles.iconLayout]}
           contentFit="cover"
@@ -115,7 +160,6 @@ const NameStart = () => {
 };
 
 const styles = StyleSheet.create({
-  
   textTypo: {
     textAlign: "center",
     color: Color.white,
@@ -241,7 +285,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.juaRegular,
     fontSize: FontSize.size_9xl,
     position: "absolute",
-    color: Color.lightpink
+    color: Color.lightpink,
   },
   input1: {
     left: 0,
