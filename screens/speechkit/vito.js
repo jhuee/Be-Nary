@@ -105,7 +105,6 @@ export default async function spechtoText(filePath) {
         console.error("Error:", error.message);
       }
     }
-
     if (data) {
       fetchTranscribedData();
     }
