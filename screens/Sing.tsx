@@ -66,7 +66,6 @@ const Sing = () => {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       const userSing: string | null | undefined = await speechtoText(uri);
-      console.log("부른노래", userSing);
 
       if (userSing) {
         const result = compareStrings(userSing, text);
@@ -93,23 +92,34 @@ const Sing = () => {
 
   function compareStrings(userSing: string, text: string): ComparedChar[] {
     const result: ComparedChar[] = [];
+    let differentChars = ""; // 틀린 발음 저장할 변수
+  
     if (!userSing)
-      return text.split("").map((char) => ({ char, style: "default" }));
-
-    const userSingarr = userSing.split("");
-    const correctSingarr = text.split("");
-
-    for (let i = 0; i < correctSingarr.length; i++) {
-      if (userSingarr[i] === correctSingarr[i]) {
-        result.push({ char: correctSingarr[i], style: "correct" });
-      } else if (userSingarr[i] !== correctSingarr[i]) {
-        result.push({ char: correctSingarr[i], style: "incorrect" });
+      return text.replace(/\s+/g, '').split("").map((char) => ({ char, style: "default" }));
+  
+      const userSingArr = userSing.replace(/\./g, '').replace(/\s+/g, '').split("");
+    const correctSingArr = text.replace(/\s+/g, '').split("");
+    console.log("부른노래", userSingArr);
+  
+    for (let i = 0; i < correctSingArr.length; i++) {
+      if (userSingArr[i] === correctSingArr[i]) {
+        result.push({ char: correctSingArr[i], style: "correct" });
+      } else if (userSingArr[i] !== correctSingArr[i]) {
+        result.push({ char: correctSingArr[i], style: "incorrect" });
+        differentChars += `녹음된 발음: ${userSingArr[i] || "undefined"}, 올바른 발음: ${correctSingArr[i]}\n`; // 다른 문자를 differentChars에 추가
       } else {
-        result.push({ char: correctSingarr[i], style: "default" });
+        result.push({ char: correctSingArr[i], style: "default" });
       }
     }
+  
+    // if (differentChars) {
+    //   Alert.alert("비나리", differentChars + "다시 발음해볼까요?");
+    // }
+  
     return result;
   }
+  
+  
   return (
     <LinearGradient
       style={styles.voiceTalk}
@@ -245,7 +255,7 @@ const styles = StyleSheet.create({
     left: 126,
     width: 148,
     height: 148,
-    zIndex: 1,
+    zIndex: 0,
     position: "absolute",
   },
 });
