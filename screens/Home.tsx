@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Home = () => {
   const navigation = useNavigation<any>();
-  const [nickname, setNickname] = useState<string>(""); 
+  const [nickname, setNickname] = useState<string>("");
 
   //닉네임 가져오기
   useEffect(() => {
@@ -16,12 +16,11 @@ const Home = () => {
       const nickname = await AsyncStorage.getItem("nickname");
       if (nickname) {
         setNickname(nickname);
+      } else {
+        console.log("닉네임 없음");
       }
-      else {
-        console.log("닉네임 없음")
-      }
-    }; 
-  
+    };
+
     getNickname();
   }, []);
 
@@ -118,8 +117,7 @@ const Home = () => {
         />
         <Pressable
           style={[styles.mypet, styles.mypetLayout]}
-          onPress={() => navigation.navigate("Miss")}
-        >
+          onPress={() => navigation.navigate("Miss")}>
           <Pressable style={styles.mypetBoxPosition}>
             <Image
               style={styles.icon}
@@ -134,7 +132,9 @@ const Home = () => {
             source={require("../assets/egg-icon.png")}
           />
         </Pressable>
-        <Pressable style={[styles.review, styles.chatPosition]}>
+        <Pressable
+          onPress={() => navigation.navigate("Sing")}
+          style={[styles.review, styles.chatPosition]}>
           <Image
             style={[styles.reviewChild, styles.mypetBoxPosition]}
             contentFit="cover"
@@ -149,8 +149,7 @@ const Home = () => {
         </Pressable>
         <Pressable
           style={[styles.chat, styles.chatPosition]}
-          onPress={() => navigation.navigate("VoiceTalk")}
-        >
+          onPress={() => navigation.navigate("VoiceTalk")}>
           <Image
             style={[styles.reviewChild, styles.mypetBoxPosition]}
             contentFit="cover"
@@ -176,8 +175,7 @@ const Home = () => {
       />
       <Pressable
         style={[styles.studyIcon, styles.iconPosition]}
-        onPress={() => navigation.navigate("VoiceGame")}
-      >
+        onPress={() => navigation.navigate("VoiceGame")}>
         <Image
           style={[styles.reviewChild, styles.mypetBoxPosition]}
           contentFit="cover"

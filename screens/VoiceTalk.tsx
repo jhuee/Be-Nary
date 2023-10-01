@@ -58,19 +58,15 @@ const VoiceTalk = () => {
   const stopRecording = async () => {
     console.log("Stopping recording..");
     if (recording) {
+      const uri = recording.getURI();
+      console.log(uri);
+      spechtoText(uri);
       await recording.stopAndUnloadAsync();
     }
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
     });
     setRecording(null); // 녹음 종료 시 recording 상태를 다시 null로 설정
-    if (recording) {
-      const uri = recording.getURI();
-      console.log(uri);
-      spechtoText(uri);
-
-      console.log("녹음 멈춤", uri);
-    }
   };
 
   return (
