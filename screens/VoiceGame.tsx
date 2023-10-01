@@ -1,6 +1,6 @@
 // import * as React from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View, Button, Pressable } from "react-native";
+import { StyleSheet, Text, View, Button, Pressable, } from "react-native";
 import { Modal } from "native-base";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import React, { useEffect, useState } from "react";
@@ -8,6 +8,16 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { dbUser } from '../firebaseConfig';
+
+
+interface Question {
+  question: string;
+  icon: string;
+  backgroundColor: string;
+  // circleUrl: string; 
+}
 
 
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
@@ -18,10 +28,17 @@ const VoiceGame = () => {
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
   const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기 
-  const [nickname, setNickname] = useState<string>(""); //닉네임 세팅
-
+  const [nickname, setNickname] = useState<string | null>(null); // 닉네임 세팅
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //
   const [level, setLevel] = useState<number>(1); //레벨
   const navigation = useNavigation<any>();
+  // const [currentBackgroundColor, setCurrentBackgroundColor] = useState(
+  //   questions[0]?.backgroundColor || "" // 초기값을 빈 문자열로 설정하거나 원하는 기본 값으로 변경하세요.
+  // );
+    // const [currentCircle, setCurrentCircle] = useState(questions[0].circleUrl);
+    const [currentBackgroundColor, setCurrentBackgroundColor] = useState(""); // 초기값을 빈 문자열로 설정하거나 원하는 기본 값으로 변경하세요.
+
 
   const [gameState, setGameState] = useState({
     currentQuestionIndex: 0,
@@ -49,58 +66,57 @@ const VoiceGame = () => {
     }
   };
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  //단어들을 DB로부터 가져오는 함수
+  const getQuestions = async (nickname: string): Promise<Question[]> => {    
+    const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
+    const userSnapshot = await getDocs(userQuery);
 
-  const questions = [
-    {
-      question: "사과",
-      icon: "🍎",
-      backgroundColor: Color.tomato_200,
-      circle: require("../assets/background-circle.png"),
-    },
-    {
-      question: "포도",
-      icon: "🍇",
-      backgroundColor: "#8347D0",
-      circle: require("../assets/purpleCircle.png"),
-    },
-    {
-      question: "요정",
-      icon: "🧚🏻‍♀",
-      backgroundColor: "#BBFF92",
-      circle: require("../assets/greenCircle.png"),
-    },
-    {
-      question: "원숭이",
-      icon: "🐵",
-      backgroundColor: "#FF9F46",
-      circle: require("../assets/orangeCircle.png"),
-    },
-    {
-      question: "토끼",
-      icon: "🐰",
-      backgroundColor: "#81CAFF",
-      circle: require("../assets/lightblueCircle.png"),
-    },
-    {
-      question: "병아리",
-      icon: "🐥",
-      backgroundColor: "#FFD542",
-      circle: require("../assets/yellowCircle.png"),
-    },
-    {
-      question: "사랑",
-      icon: "❤",
-      backgroundColor: "#FF9BBF",
-      circle: require("../assets/pinkCircle.png"),
-    },
-  ];
-  const [currentBackgroundColor, setCurrentBackgroundColor] = useState(
-    questions[0].backgroundColor
-  );
-  const [currentCircle, setCurrentCircle] = useState(questions[0].circle);
+    if (userSnapshot.empty) throw new Error("User not found");
+
+    const cDay = userSnapshot.docs[0].data().cDay;
+    console.log(cDay)
+    const wordsCollection = collection(dbUser, "words");
+    const wordsQuery = query(wordsCollection, where("cDay", "==", 1));
+    const wordsSnapshot = await getDocs(wordsQuery);
+
+    const questions = wordsSnapshot.docs.map((doc) => ({
+      question: doc.data().word,
+      icon: doc.data().icon,
+      backgroundColor: doc.data().backgroundColor,
+      // circleUrl: require(doc.data().circleUrl), // 이미지 파일 경로에 따라 수정하세요.
+    }));
+  
+    console.log(questions); // questions 배열을 콘솔에 출력
+  
+    return questions;
+
+}
+
+const fetchData = async (nickname: string) => {
+  try {
+    // 비동기 작업 실행
+    const questionsFromFirebase = await getQuestions(nickname);
+    setQuestions(questionsFromFirebase);
+    setCurrentBackgroundColor(
+      questionsFromFirebase[0]?.backgroundColor || "") //
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 
+  useEffect(() => {
+    if (nickname) { // Make sure nickname is not null
+      
+  
+      fetchData(nickname);
+    }
+  }, [nickname]); // Add nickname as a dependency
+
+
+
+  //다음 문제
   const handleNextQuestion = async () =>  {
     if (currentQuestionIndex === questions.length - 1) {
       try {
@@ -113,11 +129,14 @@ const VoiceGame = () => {
     } else {
 
 
-      const nextIndex = (currentQuestionIndex + 1) % questions.length;
+      const nextIndex =(currentQuestionIndex+1)%questions.length;
       setCurrentQuestionIndex(nextIndex);
-      setCurrentBackgroundColor(questions[nextIndex].backgroundColor);
-      setCurrentCircle(questions[nextIndex].circle);
-      textToSpeech(questions[nextIndex].question); // 다음 단어 출력
+      setCurrentBackgroundColor(questions[nextIndex]?.backgroundColor || "");
+  
+      // setCurrentCircle(require(questions[nextIndex].circleUrl)); // 이미지 파일 경로에 따라 수정하세요.
+      
+      textToSpeech(questions[nextIndex].question); 
+      
   
     }
   };
@@ -231,6 +250,7 @@ const VoiceGame = () => {
         encoding: FileSystem.EncodingType.Base64,
       });
 
+      
       try {
         const { sound } = await Audio.Sound.createAsync(
           { uri: fileUri },
@@ -352,20 +372,26 @@ const VoiceGame = () => {
   };
 
   return (
-    <View
-      style={[styles.voiceGame, { backgroundColor: currentBackgroundColor }]}>
-      <Image
-        style={styles.backgroundCircleIcon}
-        contentFit="cover"
-        source={questions[currentQuestionIndex].circle}
-      />
-      <Text style={[styles.text, styles.textFlexBox1]}>
-        {questions[currentQuestionIndex].icon}
-      </Text>
-      <Text style={[styles.text1, styles.textFlexBox]}>
-        {questions[currentQuestionIndex].question}
-      </Text>
-
+      <View style={[styles.voiceGame, { backgroundColor: currentBackgroundColor }]}>
+          {questions && questions.length > currentQuestionIndex && (
+          <>
+            <Image
+              style={styles.backgroundCircleIcon}
+              contentFit="cover"
+              // source={questions[currentQuestionIndex].circleUrl}
+            />
+            <Text style={[styles.text, styles.textFlexBox1]}>
+              {questions[currentQuestionIndex].icon}
+            </Text>
+            <Text style={[styles.text1, styles.textFlexBox]}>
+              {questions[currentQuestionIndex].question}
+            </Text>
+          </>
+        )}
+        {!questions || questions.length <= currentQuestionIndex ? (
+          <Text> 대충 스피너</Text> // 로딩 스피너 추가
+        ) : null}
+    
       {recording ? (
         <Pressable onPress={stopRecording}>
           <Image

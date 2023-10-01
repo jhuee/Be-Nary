@@ -5,6 +5,8 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { dbUser } from '../firebaseConfig';
 
 const Home = () => {
   const navigation = useNavigation<any>();
@@ -16,6 +18,26 @@ const Home = () => {
       const nickname = await AsyncStorage.getItem("nickname");
       if (nickname) {
         setNickname(nickname);
+        const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) throw new Error("User not found");
+
+    const cDay = userSnapshot.docs[0].data().cDay;
+    console.log(cDay)
+    const wordsCollection = collection(dbUser, "words");
+    const wordsQuery = query(wordsCollection, where("cDay", "==", 1));
+    const wordsSnapshot = await getDocs(wordsQuery);
+    const questions = wordsSnapshot.docs.map((doc) => ({
+      question: doc.data().word,
+      icon: doc.data().icon,
+      backgroundColor: doc.data().backgroundColor,
+      // circleUrl: require(doc.data().circleUrl), // 이미지 파일 경로에 따라 수정하세요.
+    }));
+  
+    console.log(questions[0].icon); // questions 배열을 콘솔에 출력
+        
       }
       else {
         console.log("닉네임 없음")

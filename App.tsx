@@ -10,7 +10,7 @@ import Home from "./screens/Home";
 import NameStart from "./screens/NameStart";
 import { NativeBaseProvider } from 'native-base';
 import "react-native-url-polyfill/auto";
-import LevelUP from "./screens/LevelUP";
+import LevelUP from "./screens/LevelUp";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +20,7 @@ const App = () => {
     Jua_regular: require("./assets/fonts/Jua_regular.ttf"),
     SF_Pro_bold: require("./assets/fonts/SF_Pro_bold.ttf"),
   });
+
 
   React.useEffect(() => {
     setTimeout(() => {

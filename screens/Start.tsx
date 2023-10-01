@@ -6,7 +6,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import { useNavigation } from "@react-navigation/core";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { dbUser } from "../firebaseConfig";
 const Start = () => {
   const navigation = useNavigation<any>();
 
@@ -30,8 +31,419 @@ const Start = () => {
 //   } catch(e) {
 //   }
 // }
+const AddWords = async () => {
+    const wordsCollection = collection(dbUser, "words");
 
+    const allcDaysWords = [
+        // 레벨 1
+        [
+            { 
+                word: '아기',
+                icon: '👶',
+                backgroundColor: '#FFD700',
+                circleUrl : "../assets/pinkCircle.png",
+                class: 1, 
+            },
+            {
+                word: '엄마',
+                icon: '👩‍👧‍👦',
+                backgroundColor: '#FF69B4',
+                circleUrl : "../assets/yewllowCircle.png",
+                class: 1,
+            },
+            {
+              word: '오리',
+              icon: '🦆',
+              backgroundColor: '#FF69B4',
+              circleUrl : "../assets/yewllowCircle.png",
+              cDay: 1,
+          },
+           {
+                word: '이빨',
+                icon: '🦷',
+                backgroundColor: '#FF69B4',
+                circleUrl : "../assets/yewllowCircle.png",
+                cDay: 1,
+            },
+            {
+              word: '우유',
+              icon: '🥛',
+              backgroundColor: '#FF69B4',
+              circleUrl : "../assets/yewllowCircle.png",
+              cDay: 1,
+          },
+          {
+            word: '야옹',
+            icon: '🐈',
+            backgroundColor: '#FF69B4',
+            circleUrl : "../assets/yewllowCircle.png",
+            cDay: 1,
+        },
+        {
+          word: '양말',
+          icon: '🧦',
+          backgroundColor: '#FF69B4',
+          circleUrl : "../assets/yewllowCircle.png",
+          cDay: 1,
+      },
+      {
+        word: '여우',
+        icon: '🦊',
+        backgroundColor: '#FF69B4',
+        circleUrl : "../assets/yewllowCircle.png",
+        cDay: 1,
+    },
+    {
+      word: '유리',
+      icon: '🪟',
+      backgroundColor: '#FF69B4',
+      circleUrl : "../assets/yewllowCircle.png",
+      cDay: 1,
+  },
+  {
+    word: '아빠',
+    icon: '👨',
+    backgroundColor: '#FF69B4',
+    circleUrl : "../assets/yewllowCircle.png",
+    cDay: 1,
+},
+            // 여기에 추가적인 단어들을 넣으세요.
+        ],
+        [
+          {
+            word:'어린이', 
+            icon:"🧒", 
+            backgroundColor:"#81CAFF",
+            circleUrl :"../assets/pinkCircle.png",
+            cDay: 2,
+         },
+         {
+          word:'얼음', 
+          icon:"🧊", 
+          backgroundColor:"#81CAFF",
+          circleUrl :"../assets/pinkCircle.png",
+          cDay: 2,
+       },
+       {
+        word:'공', 
+        icon:"⚽", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 2,
+     },
+     {
+      word:'달' ,
+      icon:" 🌙 " ,
+      backgroundColor:"#81CAFF",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 2,
+   },
+   {
+    word:'집', 
+    icon:"🏠", 
+    backgroundColor:"#81CAFF",
+    circleUrl :"../assets/pinkCircle.png",
+    cDay: 2,
+ },
+ {
+  word:'차', 
+  icon:"☕️", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 2,
+},
+{
+  word:'빵', 
+  icon:"🍞", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 2,
+},
+{
+  word:'책', 
+  icon:"📚", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 2,
+},
+{
+  word:'곰',
+         icon:" 🐻 ",
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 2,
+},
+{
+  word:'차', 
+  icon:"☕️", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 2,
+},
+      ],
+        // 레벨 3 'ㄱ','ㄴ','ㄷ'이 포함된 단어
+        [
+            {
+              word:'강아지', 
+              icon:"🐶", 
+              backgroundColor:"#81CAFF",
+              circleUrl :"../assets/pinkCircle.png",
+              cDay: 3,
+           },
+           {
+            word:'나무', 
+            icon:"🌳", 
+            backgroundColor:"#81CAFF",
+            circleUrl :"../assets/pinkCircle.png",
+            cDay: 3,
+         },
+         {
+          word:'돼지', 
+          icon:"🐷", 
+          backgroundColor:"#81CAFF",
+          circleUrl :"../assets/pinkCircle.png",
+          cDay: 3,
+       },
+       {
+        word:'말', 
+        icon:"🐴", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 3,
+     },
+     {
+      word:'나비', 
+      icon:"🦋", 
+      backgroundColor:"#81CAFF",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 3,
+   },
 
+   {
+    word:'고구마', 
+    icon:"🍠", 
+    backgroundColor:"#81CAFF",
+    circleUrl :"../assets/pinkCircle.png",
+    cDay: 3,
+ },
+ {
+  word:'미소', 
+  icon:"🙂", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 3,
+},
+{
+  word:'다리', 
+  icon:"🦵🏻", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 3,
+},
+
+{
+  word:'당근', 
+  icon:"🥕", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 3,
+},
+{
+  word:'꽃', 
+  icon:"🌻", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 3,
+},
+{
+  word:'개구리', 
+  icon:"🐸", 
+  backgroundColor:"#81CAFF",
+  circleUrl :"../assets/pinkCircle.png",
+  cDay: 3,
+},
+           // 여기에 추가적인 단어들을 넣으세요.
+        ],
+
+                // 레벨 4 'ㄹ'이 포함된 단어 집중
+                [
+                  {
+                    word:'사랑', 
+                    icon:"♥️", 
+                    backgroundColor:"#81CAFF",
+                    circleUrl :"../assets/pinkCircle.png",
+                    cDay: 4,
+                 },
+                 {
+                  word:'리본', 
+                  icon:"🎀", 
+                  backgroundColor:"#81CAFF",
+                  circleUrl :"../assets/pinkCircle.png",
+                  cDay: 4,
+               },
+               {
+                word:'너구리', 
+                icon:"🦝", 
+                backgroundColor:"#81CAFF",
+                circleUrl :"../assets/pinkCircle.png",
+                cDay: 4,
+             },
+             {
+              word:'레몬', 
+              icon:"🍋", 
+              backgroundColor:"#81CAFF",
+              circleUrl :"../assets/pinkCircle.png",
+              cDay: 4,
+           },
+           {
+            word:'햄버거', 
+            icon:"🍔", 
+            backgroundColor:"#81CAFF",
+            circleUrl :"../assets/pinkCircle.png",
+            cDay: 4,
+         },
+      
+         {
+          word:'병아리', 
+          icon:"🐥", 
+          backgroundColor:"#81CAFF",
+          circleUrl :"../assets/pinkCircle.png",
+          cDay: 4,
+       },
+       {
+        word:'귤', 
+        icon:"🍊", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 4,
+      },
+      {
+        word:'비행기', 
+        icon:"✈️", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 4,
+      },
+      
+      {
+        word:'구름', 
+        icon:"☁️", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 4,
+      },
+      {
+        word:'소라', 
+        icon:"🐚", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 4,
+      },
+      {
+        word:'노래', 
+        icon:"🎵", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 4,
+      },
+                 // 여기에 추가적인 단어들을 넣으세요.
+              ],
+              // 레벨 5 'ㄹ'이 포함된 단어 집중
+              [
+                {
+                  word:'자동차', 
+                  icon:"🚗", 
+                  backgroundColor:"#81CAFF",
+                  circleUrl :"../assets/pinkCircle.png",
+                  cDay: 5,
+               },
+               {
+                word:'사자', 
+                icon:"🦁", 
+                backgroundColor:"#81CAFF",
+                circleUrl :"../assets/pinkCircle.png",
+                cDay: 5,
+             },
+             {
+              word:'장미', 
+              icon:"🌹", 
+              backgroundColor:"#81CAFF",
+              circleUrl :"../assets/pinkCircle.png",
+              cDay: 5,
+           },
+           {
+            word:'웃음', 
+            icon:"😂", 
+            backgroundColor:"#81CAFF",
+            circleUrl :"../assets/pinkCircle.png",
+            cDay: 5,
+         },
+         {
+          word:'토끼', 
+          icon:"🐰", 
+          backgroundColor:"#81CAFF",
+          circleUrl :"../assets/pinkCircle.png",
+          cDay: 5,
+       },
+    
+       {
+        word:'돌고래', 
+        icon:"🐬", 
+        backgroundColor:"#81CAFF",
+        circleUrl :"../assets/pinkCircle.png",
+        cDay: 5,
+     },
+     {
+      word:'기린', 
+      icon:"🦒", 
+      backgroundColor:"#81CAFF",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 5,
+    },
+    {
+      word:'별', 
+      icon:"⭐️", 
+      backgroundColor:"#FF4500",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 5,
+    },
+    
+    {
+      word:'살랑살랑', 
+      icon:"🍃", 
+      backgroundColor:"#81CAFF",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 5,
+    },
+    {
+      word:'라면', 
+      icon:"🍜", 
+      backgroundColor:"#81CAFF",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 5,
+    },
+    {
+      word:'로켓', 
+      icon:"🚀", 
+      backgroundColor:"#81CAFF",
+      circleUrl :"../assets/pinkCircle.png",
+      cDay: 4,
+    },
+               // 여기에 추가적인 단어들을 넣으세요.
+            ],
+      ];
+      
+      // 모든 레벌의 단어 데이터를 Firestore에 저장
+
+    try {
+      await Promise.all(allcDaysWords.map(cDay => cDay.map(wordData => addDoc(wordsCollection, wordData))));
+      console.log("단어 데이터 추가 완료");
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+
+  };
+AddWords();
   return (
     <LinearGradient
       style={styles.start}
