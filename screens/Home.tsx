@@ -5,24 +5,70 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { dbUser } from "../firebaseConfig";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 
 const Home = () => {
   const navigation = useNavigation<any>();
-  const [nickname, setNickname] = useState<string>("");
-
+  const [nickName, setNickname] = useState<string>("");
+  const userCollection = collection(dbUser, "user");
+  const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
   //닉네임 가져오기
-  useEffect(() => {
-    const getNickname = async () => {
-      const nickname = await AsyncStorage.getItem("nickname");
-      if (nickname) {
-        setNickname(nickname);
-      } else {
-        console.log("닉네임 없음");
+  const updatelLevel = async () => {
+    if (nickName.length > 0) {
+      try {
+        const q = query(userCollection, where("nickname", "==", nickName));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          console.error("사용자 정보 없음");
+          return;
+        }
+        querySnapshot.forEach((doc) => {
+          const userDoc = doc.data();
+          if (userDoc) {
+            if (userDoc.level === 1) setChaURL(1);
+            else if (userDoc.level === 2) setChaURL(2);
+            else if (userDoc.level === 3) setChaURL(3);
+            else if (userDoc.level === 4) setChaURL(4);
+            else if (userDoc.level === 5) setChaURL(5);
+            else console.error("잘못된 레벨");
+          } else {
+            console.error("사용자 정보 없음");
+          }
+          console.log(chaURL);
+        });
+      } catch (error) {
+        console.error("사용자 정보를 불러오는 중 오류 발생: ", error);
       }
-    };
-
+    }
+  }
+  //닉네임 가져오기
+  const getNickname = async () => {
+    const storage = await AsyncStorage.getItem("nickname");
+    if (storage) setNickname(storage);
+    else console.log("닉네임 없음");
+  };
+  
+  useEffect(() => {
     getNickname();
+    updatelLevel();
   }, []);
+  
+  useEffect(() => {
+    if (nickName) updatelLevel();
+  }, [nickName]);
+
+  // useEffect(() => {
+  //   getNickname();
+  //   updatelLevel();
+  // },[chaURL]);
 
   return (
     <View style={styles.home}>
@@ -101,7 +147,7 @@ const Home = () => {
           contentFit="cover"
           source={require("../assets/ellipse-15.png")}
         />
-        <Text style={[styles.text2, styles.text2Typo]}>{`안녕 ${nickname}!
+        <Text style={[styles.text2, styles.text2Typo]}>{`안녕 ${nickName}!
 오늘의 발음 연습
 구름이와 함께 해요 !`}</Text>
         <Image
@@ -110,14 +156,9 @@ const Home = () => {
           source={require("../assets/rectangle-12318.png")}
         />
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
-        <Image
-          style={[styles.menuBarIcon, styles.iconLayout]}
-          contentFit="cover"
-          source={require("../assets/menu-bar.png")}
-        />
         <Pressable
           style={[styles.mypet, styles.mypetLayout]}
-          onPress={() => navigation.navigate("Miss")}>
+          onPress={() => navigation.navigate("sing")}>
           <Pressable style={styles.mypetBoxPosition}>
             <Image
               style={styles.icon}
@@ -125,11 +166,11 @@ const Home = () => {
               source={require("../assets/mypet-box.png")}
             />
           </Pressable>
-          <Text style={styles.text4}>마이펫</Text>
+          <Text style={styles.text4}>노래하기</Text>
           <Image
-            style={styles.eggIcon}
+            style={styles.micIcon}
             contentFit="cover"
-            source={require("../assets/egg-icon.png")}
+            source={require("../assets/micdrop.png")}
           />
         </Pressable>
         <Pressable
@@ -165,14 +206,9 @@ const Home = () => {
         <Image
           style={styles.eggIcon1}
           contentFit="cover"
-          source={require("../assets/egg2.png")}
+          source={{ uri: `https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`}}
         />
       </View>
-      <Image
-        style={[styles.backBtnIcon, styles.iconLayout]}
-        contentFit="cover"
-        source={require("../assets/back-btn.png")}
-      />
       <Pressable
         style={[styles.studyIcon, styles.iconPosition]}
         onPress={() => navigation.navigate("VoiceGame")}>
@@ -254,6 +290,9 @@ const styles = StyleSheet.create({
     top: -9,
     left: -9,
     position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    alignContent: "center",
   },
   textTypo: {
     left: 45,
@@ -377,19 +416,19 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_6xl,
   },
   text4: {
-    left: 54,
+    left: 44,
     color: Color.mediumpurple,
     top: 122,
     fontSize: FontSize.size_xl,
-    textAlign: "left",
+    textAlign: "center",
     fontFamily: FontFamily.juaRegular,
     position: "absolute",
   },
-  eggIcon: {
-    left: 30,
-    width: 98,
-    height: 98,
-    top: 18,
+  micIcon: {
+    left: 15,
+    width: 120,
+    height: 120,
+    top: 5,
     position: "absolute",
   },
   mypet: {

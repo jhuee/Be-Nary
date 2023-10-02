@@ -12,12 +12,69 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { FontSize, FontFamily, Color, Border } from "../GlobalStyles";
 import { Audio } from "expo-av";
-import spechtoText from "./speechkit/vito";
+import spechtoText from "./userinfo/vito";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { dbUser } from "../firebaseConfig";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 
 const VoiceTalk = () => {
   const [aiResponse, setAIResponse] = useState<string>("");
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [nickName, setNickname] = useState<string>("");
+  const userCollection = collection(dbUser, "user");
+  const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
+  //닉네임 가져오기
+  const updatelLevel = async () => {
+    if (nickName.length > 0) {
+      try {
+        const q = query(userCollection, where("nickname", "==", nickName));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          console.error("사용자 정보 없음");
+          return;
+        }
+        querySnapshot.forEach((doc) => {
+          const userDoc = doc.data();
+          if (userDoc) {
+            if (userDoc.level === 1) setChaURL(1);
+            else if (userDoc.level === 2) setChaURL(2);
+            else if (userDoc.level === 3) setChaURL(3);
+            else if (userDoc.level === 4) setChaURL(4);
+            else if (userDoc.level === 5) setChaURL(5);
+            else console.error("잘못된 레벨");
+          } else {
+            console.error("사용자 정보 없음");
+          }
+          console.log(chaURL);
+        });
+      } catch (error) {
+        console.error("사용자 정보를 불러오는 중 오류 발생: ", error);
+      }
+    }
+  }
+  //닉네임 가져오기
+  const getNickname = async () => {
+    const storage = await AsyncStorage.getItem("nickname");
+    if (storage) setNickname(storage);
+    else console.log("닉네임 없음");
+  };
+  
+  useEffect(() => {
+    getNickname();
+    updatelLevel();
+  }, []);
+  
+  useEffect(() => {
+    if (nickName) updatelLevel();
+  }, [nickName]);
+
 
   //response 가져오기
   useEffect(() => {
@@ -77,13 +134,9 @@ const VoiceTalk = () => {
       <Image
         style={styles.eggIcon}
         contentFit="cover"
-        source={require("../assets/egg1.png")}
+        source={ `https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`}
       />
-      <Image
-        style={styles.hedsetIcon}
-        contentFit="cover"
-        source={require("../assets/hedset.png")}
-      />
+
 
       {recording ? (
         <Pressable onPress={stopRecording}>

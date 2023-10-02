@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Text,
@@ -6,8 +6,6 @@ import {
   Pressable,
   View,
   TextInput,
-  NativeSyntheticEvent,
-  TextInputSubmitEditingEventData,
   Alert,
 } from "react-native";
 import { Image } from "expo-image";
@@ -15,64 +13,82 @@ import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/core";
 import { dbUser } from "../firebaseConfig";
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 
-const NameStart = () => {
+const SetEmail = () => {
   const navigation = useNavigation<any>();
   const userCollection = collection(dbUser, "user");
+  const [inputEmail, setInputEmail] = useState<string>("");
+  const [nickName, setNickName] = useState<string>("");
 
-  let nickname: string = "";
+  //닉네임 가져오기
+  const getNickname = async () => {
+    const storage = await AsyncStorage.getItem("nickname");
+    if (storage) setNickName(storage);
+    else console.log("닉네임 없음");
+  };
+  const textEmail = (email: string) => {
+    //이메일 작성 필드
+    setInputEmail(email);
+  };
 
-  const setNickname = async (
-    event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
-  ) => {
-    nickname = event.nativeEvent.text;
-    if (await nicknameCheck()) {
-      try {
-        await AsyncStorage.setItem("nickname", nickname);
-      } catch (e: any) {
-        console.error(e.message);
+  const addDB = async () => {
+    try {
+      // 이메일 유효성 검사
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(inputEmail)) {
+        Alert.alert("비나리", "올바른 이메일 형식을 입력해주세요.");
+        return;
       }
+
+      await addDoc(userCollection, {
+        nickname: nickName,
+        email: inputEmail,
+        exp: 0,
+        level: 1,
+        cDay: 1,
+      });
+      console.log("문서 추가 성공");
+    } catch (error) {
+      console.error("문서 추가 실패: ", error);
+      throw error;
     }
   };
-
-  const nicknameCheck = async () => {
-    //닉네임 중복체크함수
-    const q = query(userCollection, where("nickname", "==", nickname));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-
 
   const goHome = async () => {
-    if (await nicknameCheck()) {
-      navigation.navigate("setEmail");
-    } else {
-      Alert.alert("비나리", "중복된 닉네임입니다. 다시 입력해주세요.");
+    try {
+      await addDB(); // addDB가 성공적으로 완료될 때까지 기다림
+      navigation.navigate("Home"); // addDB가 성공하면 네비게이션
+    } catch (error) {
+      console.error("네비게이션 실패: ", error);
     }
   };
 
+  useEffect(() => {
+    getNickname();
+  });
   return (
-    <KeyboardAvoidingView style={styles.nameStart}>
+    <KeyboardAvoidingView style={styles.emailSet}>
       <Text style={[styles.beNary, styles.textTypo]}>Be Nary</Text>
       <Image
-        style={styles.nameStartChild}
+        style={styles.emailSetChild}
         contentFit="cover"
         source={require("../assets/ellipse-121.png")}
       />
       <Image
-        style={[styles.nameStartItem, styles.childLayout]}
+        style={[styles.emailSetItem, styles.childLayout]}
         contentFit="cover"
         source={require("../assets/ellipse-13.png")}
       />
       <Image
-        style={[styles.nameStartInner, styles.childLayout]}
+        style={[styles.emailSetInner, styles.childLayout]}
         contentFit="cover"
         source={require("../assets/ellipse-13.png")}
       />
@@ -82,32 +98,35 @@ const NameStart = () => {
         source={require("../assets/ellipse-13.png")}
       />
       <Image
-        style={[styles.nameStartChild1, styles.nameChildLayout]}
+        style={[styles.emailSetChild1, styles.nameChildLayout]}
         contentFit="cover"
         source={require("../assets/ellipse-15.png")}
       />
       <Image
-        style={[styles.nameStartChild2, styles.nameChildLayout]}
+        style={[styles.emailSetChild2, styles.nameChildLayout]}
         contentFit="cover"
         source={require("../assets/ellipse-21.png")}
       />
       <Image
-        style={styles.nameStartChild3}
+        style={styles.emailSetChild3}
         contentFit="cover"
         source={require("../assets/ellipse-22.png")}
       />
       <Image
-        style={[styles.nameStartChild4, styles.childLayout]}
+        style={[styles.emailSetChild4, styles.childLayout]}
         contentFit="cover"
         source={require("../assets/ellipse-23.png")}
       />
       <Image
-        style={[styles.nameStartChild5, styles.childLayout]}
+        style={[styles.emailSetChild5, styles.childLayout]}
         contentFit="cover"
         source={require("../assets/ellipse-24.png")}
       />
-      <Text style={[styles.text, styles.textTypo]}>{`안녕! 만나서 반가워요!
-당신의 이름은 무엇인가요?`}</Text>
+      <Text
+        style={[
+          styles.text,
+          styles.textTypo,
+        ]}>{`보호자 이메일을 작성해주세요!`}</Text>
       <Pressable style={styles.okBtn} onPress={goHome}>
         <Image
           style={[styles.okBtnIcon, styles.iconLayout]}
@@ -140,10 +159,9 @@ const NameStart = () => {
           />
           <TextInput
             style={styles.textinput}
-            placeholder="닉네임"
             autoCapitalize="words"
             textContentType="nickname"
-            onSubmitEditing={setNickname}
+            onChangeText={textEmail}
           />
         </View>
       </View>
@@ -182,20 +200,19 @@ const styles = StyleSheet.create({
   },
   beNary: {
     top: 36,
-    left: 147,
   },
-  nameStartChild: {
+  emailSetChild: {
     top: 148,
     left: 182,
     width: 106,
     height: 107,
     position: "absolute",
   },
-  nameStartItem: {
+  emailSetItem: {
     top: 151,
     left: 172,
   },
-  nameStartInner: {
+  emailSetInner: {
     top: 158,
     left: 301,
   },
@@ -203,32 +220,31 @@ const styles = StyleSheet.create({
     top: 251,
     left: 178,
   },
-  nameStartChild1: {
+  emailSetChild1: {
     top: 237,
     left: 210,
   },
-  nameStartChild2: {
+  emailSetChild2: {
     top: 676,
     left: 38,
   },
-  nameStartChild3: {
+  emailSetChild3: {
     top: 557,
     left: 241,
     width: 107,
     height: 106,
     position: "absolute",
   },
-  nameStartChild4: {
+  emailSetChild4: {
     top: 535,
     left: 280,
   },
-  nameStartChild5: {
+  emailSetChild5: {
     top: 643,
     left: 351,
   },
   text: {
     top: 97,
-    left: 57,
     textShadowColor: "rgba(0, 0, 0, 0.05)",
     textShadowOffset: {
       width: 0,
@@ -246,21 +262,18 @@ const styles = StyleSheet.create({
   },
   okBtn: {
     top: 681,
-    left: 68,
     height: 59,
     width: 270,
     position: "absolute",
   },
   eggIcon: {
     top: 221,
-    left: 53,
     width: 289,
     height: 311,
     position: "absolute",
   },
   inputChild: {
     top: 1,
-    left: 148,
   },
   ellipseIcon1: {
     top: 16,
@@ -268,39 +281,36 @@ const styles = StyleSheet.create({
   },
   nameInputIcon: {
     top: 2,
-    left: 8,
   },
   textinput: {
-    top: 5,
-    left:100,
-    width: "40%",
+    left: 30,
+    width: "70%",
     height: "100%",
     fontFamily: FontFamily.juaRegular,
-    fontSize: FontSize.size_9xl,
+    fontSize: 20,
     position: "absolute",
     color: Color.lightpink,
+    textAlign: "center", // 텍스트를 가운데 정렬합니다.
     zIndex: 1,
   },
   input1: {
-    left: 0,
-    top: 0,
     overflow: "hidden",
   },
   input: {
     top: 599,
-    left: 55,
   },
-  nameStart: {
+  emailSet: {
     borderRadius: Border.br_31xl,
     backgroundColor: "#fef7d3",
     borderStyle: "solid",
     borderColor: "#bcbcbc",
     borderWidth: 1,
-    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     width: "100%",
-    height: 852,
-    overflow: "hidden",
+    height: "100%",
   },
 });
 
-export default NameStart;
+export default SetEmail;

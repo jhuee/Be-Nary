@@ -41,6 +41,7 @@ const Sing = () => {
   const navigation = useNavigation<any>();
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const userCollection = collection(dbUser, "user");
+  const [score, setScore] = useState(-1);
 
   const getNickname = async () => {
     const storage = await AsyncStorage.getItem("nickname");
@@ -152,8 +153,7 @@ const Sing = () => {
         if (userDoc) {
           const newExp = (userDoc.exp || 0) + 10;
           await updateDoc(doc.ref, { exp: newExp });
-        }
-        else {
+        } else {
           console.error("사용자 정보 없음");
         }
       });
@@ -190,7 +190,7 @@ const Sing = () => {
 
     // 컴포넌트가 언마운트되거나, 녹음이 끝나면 setTimeout 클리어
     return () => timeouts.forEach((id) => clearTimeout(id));
-  }, [recording,currentIndex]); 
+  }, [recording, currentIndex]);
 
   const playSound = async () => {
     const sound = new Audio.Sound();
@@ -244,11 +244,11 @@ const Sing = () => {
       setRecording(null);
     }
   };
-
   let differentChars = ""; // 틀린 발음 저장할 변수
 
   function compareStrings(userSing: string, text: string): ComparedChar[] {
     const result: ComparedChar[] = [];
+    let incorrectCount = 0; // 잘못된 문자 수를 저장할 변수
 
     if (!userSing)
       return text
@@ -261,28 +261,34 @@ const Sing = () => {
       .replace(/\s+/g, "")
       .split("");
     const correctSingArr = text.replace(/\s+/g, "").split("");
-    console.log("부른노래", userSingArr);
 
     for (let i = 0; i < correctSingArr.length; i++) {
       if (userSingArr[i] === correctSingArr[i]) {
         result.push({ char: correctSingArr[i], style: "correct" });
-      } else if (userSingArr[i] !== correctSingArr[i]) {
+      } else {
         result.push({ char: correctSingArr[i], style: "incorrect" });
+        incorrectCount++; // 잘못된 문자가 발견되면 카운터 증가
         differentChars += `녹음된 발음: ${
           userSingArr[i] || "undefined"
-        }, 올바른 발음: ${correctSingArr[i]}\n`; // 다른 문자를 differentChars에 추가
-      } else {
-        result.push({ char: correctSingArr[i], style: "default" });
+        }, 올바른 발음: ${correctSingArr[i]}\n`;
       }
     }
+
+    setScore(
+      ((correctSingArr.length - incorrectCount) / correctSingArr.length) * 100
+    ); // 백분율 점수 계산
+    console.log("Score: ", score); // 점수 출력
+
     setNextsing(true);
     return result;
   }
+
   const onClick = () => {
     setCurrentIndex((prevIndex) => prevIndex + 1);
     setComparedResult([]);
     setNextsing(false);
     setCountdown(3);
+    setScore(-1);
   };
 
   return (
@@ -304,8 +310,10 @@ const Sing = () => {
       {nextSing && (
         <View style={styles.container}>
           <View style={styles.loading}>
-            <Text style={styles.loadingTxt}>
-              {randomMsg[Math.floor(Math.random() * randomMsg.length)]}
+            <Text style={styles.scoreTxt}>
+              {`제 점수는요... ${score}점!\n${
+                randomMsg[Math.floor(Math.random() * randomMsg.length)]
+              }`}
             </Text>
 
             <View style={styles.buttonContainer}>
@@ -499,6 +507,16 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginRight: 20,
   },
+  scoreTxt: {
+    fontSize: FontSize.size_9xl,
+    fontFamily: FontFamily.juaRegular,
+    color: "rgb(70,101,191)",
+    fontWeight: "bold",
+    textAlign: "center", // 가운데 정렬
+    position: "absolute",
+    marginLeft: 20,
+    marginRight: 20,
+    top: 50  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
