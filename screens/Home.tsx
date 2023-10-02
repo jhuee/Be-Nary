@@ -44,6 +44,7 @@ const Home = () => {
             else if (userDoc.level === 3) setChaURL(3);
             else if (userDoc.level === 4) setChaURL(4);
             else if (userDoc.level === 5) setChaURL(5);
+            else if (userDoc.level === 6) setChaURL(6);
             else console.error("잘못된 레벨");
           } else {
             console.error("사용자 정보 없음");
@@ -159,7 +160,7 @@ const Home = () => {
           contentFit="cover"
           source={require("../assets/ellipse-15.png")}
         />
-        <Text style={[styles.text2, styles.text02 ,styles.text2Typo]}>{`안녕 ${nickName}!
+        <Text style={[styles.text2, styles.text2Typo]}>{`안녕 ${nickName}!
 오늘의 발음 연습
 구름이와 함께 해요 !`}</Text>
         <Image
@@ -178,7 +179,11 @@ const Home = () => {
           <Icon as={MaterialIcons} name="favorite" color="#FAB9B4" size="lg" />
         </Slider.Thumb>
       </Slider>
-        
+        <Image
+          style={[styles.menuBarIcon, styles.iconLayout]}
+          contentFit="cover"
+          source={require("../assets/menu-bar.png")}
+        />
         <Pressable
           style={[styles.mypet, styles.mypetLayout]}
           onPress={() => navigation.navigate("Sing")}>
@@ -197,7 +202,7 @@ const Home = () => {
           />
         </Pressable>
         <Pressable
-          onPress={() => navigation.navigate("Review")}
+          onPress={() => navigation.navigate("Sing")}
           style={[styles.review, styles.chatPosition]}>
           <Image
             style={[styles.reviewChild, styles.mypetBoxPosition]}
@@ -255,7 +260,9 @@ const styles = StyleSheet.create({
   home1Layout: {
     overflow: "hidden",
     borderWidth: 1,
+    borderStyle: "solid",
     backgroundColor: Color.white,
+    borderRadius: Border.br_31xl,
     left: 0,
     top: 0,
     position: "absolute",
@@ -265,6 +272,7 @@ const styles = StyleSheet.create({
   childLayout: {
     height: 468,
     width: 425,
+    borderRadius: Border.br_31xl,
     position: "absolute",
   },
   iphone14ChildLayout: {
@@ -281,7 +289,7 @@ const styles = StyleSheet.create({
   },
   text2Typo: {
     textAlign: "center",
-    color: "white",
+    color: Color.white,
     fontFamily: FontFamily.juaRegular,
     fontSize: FontSize.size_9xl,
     position: "absolute",
@@ -396,6 +404,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.sFProBold,
   },
   iphone14Pro4: {
+    borderColor: "#000",
   },
   homeChild: {
     top: 399,
@@ -404,34 +413,16 @@ const styles = StyleSheet.create({
   beNary: {
     top: 36,
     left: 147,
-    textShadowColor: Color.lightpink,
-    textShadowOffset: {
-      width: -1,
-      height: 1,
-    },
-    textShadowRadius: 4,
   },
   text2: {
-    top: 1,
-    left: 84,
-    textShadowColor: Color.pink,
-    textShadowOffset: {
-      width: -1,
-      height: 1,
-    },
-    textShadowRadius: 4,
-   
-  },
-  text02: {
     top: 110,
     left: 84,
-    textShadowColor: Color.lightpink,
+    textShadowColor: "rgba(0, 0, 0, 0.05)",
     textShadowOffset: {
-      width: -1,
-      height: 1,
+      width: 0,
+      height: 4,
     },
     textShadowRadius: 4,
-   
   },
   text3: {
     top: 285,
@@ -520,7 +511,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   home1: {
-    borderColor: "#FFFFFF",
+    borderColor: "#bcbcbc",
   },
   backBtnIcon: {
     width: "5.09%",
