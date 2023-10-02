@@ -13,6 +13,7 @@ import "react-native-url-polyfill/auto";
 import LevelUP from "./screens/LevelUP";
 import Sing from "./screens/Sing";
 import SetEmail from "./screens/setEmail";
+import Review from "./screens/Review";
 
 const Stack = createNativeStackNavigator();
 
@@ -85,6 +86,11 @@ const App = () => {
              <Stack.Screen
               name="Sing"
               component={Sing}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Review"
+              component={Review}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

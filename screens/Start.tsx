@@ -36,7 +36,8 @@ const removeNickname = async () => {
     await AsyncStorage.removeItem("nickname")
   } catch(e) {
   }
-}
+ }
+// removeNickname();/
 
   return (
     <LinearGradient

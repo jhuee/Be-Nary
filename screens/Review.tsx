@@ -8,51 +8,32 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  doc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc} from "firebase/firestore";
 import { dbUser } from "../firebaseConfig";
-import emailjs from "emailjs-com";
-import speechtoText from "./speechkit/stt";
-interface Question {
-  question: string;
-  icon: string;
-  backgroundColor: string;
-  circleUrl: string;
-}
 
-interface DB {
-  user: string;
-  word: string;
-  usrScore: string;
-}
+type Record = {
+    question: string;
+    score: number;
+    date: Date;
+    backgroundColor?: string; 
+    circleUrl: string; 
+    icon: string;
+   };
+   
 
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
-const VoiceGame = () => {
-  const [recordResult, setRecordResult] = useState<
-    { user: string; word: string; usrScore: string }[]
-  >([]);
-  const [cDay ,setcDay] = useState<number>(-1);
-
+const Review = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
   const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기
   const [nickname, setNickname] = useState<string | null>(null); // 닉네임 세팅
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Record[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //
   const [level, setLevel] = useState<number>(1); //레벨
   const navigation = useNavigation<any>();
-  const [mail, setMail] = useState<string | null>(""); // 메일 세팅
   // const [currentBackgroundColor, setCurrentBackgroundColor] = useState(
   //   questions[0]?.backgroundColor || "" // 초기값을 빈 문자열로 설정하거나 원하는 기본 값으로 변경하세요.
   // );
@@ -62,19 +43,19 @@ const VoiceGame = () => {
   const year = today.getFullYear(); // 년도
   const month = String(today.getMonth() + 1).padStart(2, "0"); // 월 (0부터 시작하므로 +1 필요)
   const day = String(today.getDate()).padStart(2, "0"); // 일
-  const userCollection = collection(dbUser, "user");
-  const userQuery = query(userCollection, where("nickname", "==", nickname));
-  let records: DB[] = [];
-
+  
   // 년/월/일 형식으로 저장할 문자열 생성
   const dateString = `${year}/${month}/${day}`;
-  const [userSay, setUsersay] = useState("");
+  
+
   const [gameState, setGameState] = useState({
     currentQuestionIndex: 0,
     level: 0,
     showModal: false,
     modalMessage: "",
   });
+
+
 
   const getNickname = async () => {
     const nickname = await AsyncStorage.getItem("nickname");
@@ -83,58 +64,37 @@ const VoiceGame = () => {
     }
   };
 
-  // //DB 읽기
-  // const userDoc = querySnapshot.docs[0];
-  // // 사용자 문서의 'record' 하위 콜렉션에 데이터 추가
-  // const recordCollection = collection(userDoc.ref, "record");
-
-  const readDB = async () => {
-    try {
-      const userSnapshot = await getDocs(userQuery);
-      if (userSnapshot.empty) {
-        console.error("유저없음");
-      }
-      const userDocRef = userSnapshot.docs[0].ref;
-      const recordSnapshot = await getDocs(collection(userDocRef, "email"));
-      const records = recordSnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          user: data.user || "",
-          word: data.word || "",
-          usrScore: data.usrScore || "",
-        };
-      });
-      // 내부 상태를 업데이트합니다.
-      setRecordResult(records);
-      console.log(records);
-    } catch (error) {
-      console.error("Error reading DB: ", error);
-    }
-  };
-
-
   //단어들을 DB로부터 가져오는 함수
-  const getQuestions = async (nickname: string): Promise<Question[]> => {
+  const getQuestions = async (nickname: string): Promise<Record[]> => {
+    const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
     const userSnapshot = await getDocs(userQuery);
-
+  
     if (userSnapshot.empty) throw new Error("User not found");
-
-   setcDay(userSnapshot.docs[0].data().cDay);
-    const wordsCollection = collection(dbUser, "words");
-    const wordsQuery = query(wordsCollection, where("cDay", "==", cDay));
-    const wordsSnapshot = await getDocs(wordsQuery);
-
-    const questions = wordsSnapshot.docs.map((doc) => ({
+  
+    const userId = userSnapshot.docs[0].id; // 사용자 문서의 ID를 가져옵니다.
+    
+    // 사용자 문서 아래에 있는 'record' 컬렉션을 참조합니다.
+    const recordCollectionRef = collection(dbUser, "user", userId, "record");
+    
+    // 모든 레코드를 가져옵니다.
+    const recordSnapshot = await getDocs(recordCollectionRef);
+  
+    const questions = recordSnapshot.docs.map((doc) => ({
       question: doc.data().word,
-      icon: doc.data().icon,
+      score: doc.data().score,
+      date: doc.data().date,
       backgroundColor: doc.data().backgroundColor,
-      circleUrl: doc.data().circleUrl, // 이미지 파일 경로에 따라 수정하세요.
-    }));
-
-    console.log(questions); // questions 배열을 콘솔에 출력
-
-    return questions;
+      circleUrl: doc.data().circleUrl,
+      icon: doc.data().icon
+      // 필요한 다른 필드들도 여기에 추가하세요.
+  }));
+  
+  console.log(questions); 
+  
+  return questions;
   };
+  
 
   const fetchData = async (nickname: string) => {
     try {
@@ -144,7 +104,7 @@ const VoiceGame = () => {
       setCurrentBackgroundColor(
         questionsFromFirebase[0]?.backgroundColor || ""
       ); //
-      setCurrentCircle(questionsFromFirebase[0]?.circleUrl || "");
+      setCurrentCircle(questionsFromFirebase[0]?.circleUrl || "")
     } catch (error) {
       console.error(error);
     }
@@ -170,52 +130,51 @@ const VoiceGame = () => {
   //다음 문제
   const handleNextQuestion = async () => {
     if (currentQuestionIndex === questions.length - 1) {
-      try {
-        const userSnapshot = await getDocs(userQuery);
+
+    const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
+    
+    try {
+      const userSnapshot = await getDocs(userQuery);
+  
+      if (!userSnapshot.empty) {
         const userData = userSnapshot.docs[0].data();
-        setMail(userData.email);
-        if (!userSnapshot.empty) {
-          const userData = userSnapshot.docs[0].data();
-          let currentExp = userData.exp || 0; // 기존의 경험치 값 (없으면 기본값은 0)
-          let currentCDay = userData.cDay || 1;
-          // 2. 활동으로 인한 새로운 경험치 계산 및 갱신
-          currentExp += 10;
-          currentCDay += 1;
-          // 3. 새로운 레벨 계산 (임계값 설정)
-          const levelThresholds = [40, 80, 140, 210]; // 각 임계값 별로 랭크/레벨 설정
-          let currentLevel =
-            levelThresholds.findIndex((threshold) => currentExp < threshold) +
-            1;
-
-          // 최대 랭크/레벨 제한 설정 (옵션)
-          const maxLevel = levelThresholds.length + 1;
-          if (currentLevel > maxLevel) {
-            currentLevel = maxLevel;
-            currentExp = levelThresholds[maxLevel - 2]; // 최대 랭크/레벨일 경우 마지막 임계값으로 고정
-          }
-
-          // 변경된 정보 업데이트할 객체 생성
-          const updateData: any = {
-            exp: currentExp,
-            level: currentLevel,
-            cDay: currentCDay,
-          };
-
-          await updateDoc(userSnapshot.docs[0].ref, updateData);
-
-          console.log("경험치가 성공적으로 업데이트되었습니다.");
-          console.log("새로운 Level:", updateData.level);
-          console.log("새로운 Exp:", updateData.exp);
-          console.log("새로운 Class:", updateData.cDay);
-        } else {
-          console.error("사용자 문서가 존재하지 않습니다.");
+        let currentExp = userData.exp || 0; // 기존의 경험치 값 (없으면 기본값은 0)
+        let currentCDay = userData.cDay || 1;
+        // 2. 활동으로 인한 새로운 경험치 계산 및 갱신
+        currentExp += 10;
+        currentCDay += 1;
+        // 3. 새로운 레벨 계산 (임계값 설정)
+        const levelThresholds = [40,80,140,210]; // 각 임계값 별로 랭크/레벨 설정
+        let currentLevel = levelThresholds.findIndex((threshold) => currentExp < threshold) + 1;
+  
+        // 최대 랭크/레벨 제한 설정 (옵션)
+        const maxLevel = levelThresholds.length + 1;
+        if (currentLevel > maxLevel) {
+          currentLevel = maxLevel;
+          currentExp = levelThresholds[maxLevel - 2]; // 최대 랭크/레벨일 경우 마지막 임계값으로 고정
         }
+  
+	  // 변경된 정보 업데이트할 객체 생성
+	  const updateData: any= { exp: currentExp, level: currentLevel , cDay : currentCDay};
 
-        navigation.navigate("LevelUp"); // LevelUp 화면으로 이동
-      } catch (error) {
-        console.error("문서 조회 중 오류가 발생하였습니다:", error);
-      }
+	  await updateDoc(userSnapshot.docs[0].ref, updateData);
+      
+	  console.log("경험치가 성공적으로 업데이트되었습니다.");
+	  console.log("새로운 Level:", updateData.level);
+	  console.log("새로운 Exp:", updateData.exp);
+	  console.log("새로운 Class:", updateData.cDay);
     } else {
+    	console.error("사용자 문서가 존재하지 않습니다.");
+    }
+    
+    navigation.navigate("LevelUp"); // LevelUp 화면으로 이동
+  
+     } catch (error) {
+       console.error("문서 조회 중 오류가 발생하였습니다:", error);
+     }
+    }
+   else {
       const nextIndex = (currentQuestionIndex + 1) % questions.length;
       setCurrentQuestionIndex(nextIndex);
       setCurrentBackgroundColor(questions[nextIndex]?.backgroundColor || "");
@@ -287,19 +246,8 @@ const VoiceGame = () => {
     };
   });
 
+  getNickname();
   useEffect(() => {
-    getNickname();
-    getEmail();
-  });
-
-  const getEmail = async () => {
-    const userSnapshot = await getDocs(userQuery);
-    const userData = userSnapshot.docs[0].data();
-    setMail(userData.email);
-  };
-
-  useEffect(() => {
-    // readDB();
     function textToSpeech(_text: string) {
       const url =
         "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
@@ -372,8 +320,6 @@ const VoiceGame = () => {
 
   // 녹음을 시작하는 함수
   async function startRecording() {
-    sendVerificationEmail();
-
     try {
       console.log("Requesting permissions..");
       await Audio.requestPermissionsAsync();
@@ -405,6 +351,7 @@ const VoiceGame = () => {
     setRecording(null); // 녹음 종료 시 recording 상태를 다시 null로 설정
     if (recording) {
       const uri = recording.getURI();
+
       // API로 녹음된 오디오를 보내고 발음 평가를 수행
       sendPronunciationEvaluation(
         uri,
@@ -415,12 +362,6 @@ const VoiceGame = () => {
   };
 
   const sendPronunciationEvaluation = async (audioUri: any, text: string) => {
-    const uri = audioUri;
-    const uSay: string = await speechtoText(uri);
-    console.log("유저세이", userSay);
-    if (uSay) {
-      setUsersay(uSay);
-    }
     const openApiURL = "http://aiopen.etri.re.kr:8000/WiseASR/PronunciationKor"; // 한국어
     const accessKey = "ab9bf69a-2837-4014-86c7-29d836f1809c";
     const languageCode = "korean";
@@ -447,59 +388,14 @@ const VoiceGame = () => {
         },
         body: JSON.stringify(requestJson),
       });
-      
 
       const responseData = await response.json();
       console.log("Response Data:", responseData);
-      
-      
-      const querySnapshot = await getDocs(userQuery);
-      if (!querySnapshot.empty) {
-      
-
-        getDocs(userQuery)
-        .then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            const userDocRef = doc.ref;
-            const recordCollectionRef = collection(userDocRef, "email");
-
-            // 새로운 문서 생성 및 데이터 저장
-            addDoc(recordCollectionRef, {
-              word: responseData.return_object.recognized,
-               user: userSay,
-              score: responseData.return_object.score,
-              cDay: cDay
-            })
-              .then((docRef) => {
-                console.log(
-                  "학습 결과가 성공적으로 저장되었습니다. 문서 ID:",
-                  docRef.id
-                );
-              })
-              .catch((error) => {
-                console.error("데이터 저장 중 오류가 발생했습니다:", error);
-              });
-          });
-        })
-        .catch((error) => {
-          console.error("문서 조회 중 오류가 발생했습니다:", error);
-        });
-      } else {
-        console.error("유저없음!");
-
-      }
-
-
 
       // 점수에 따라 ModalMessage 설정
       if (parseFloat(responseData.return_object.score) > 1.7) {
         setModalMessage(`${nickname}~ 참 잘했어요!`);
-        // 쿼리 실행
-       
-    
         if (currentQuestionIndex === questions.length - 1) {
-          readDB();
-          sendVerificationEmail()
           setLevel((prevLevel) => prevLevel + 1);
           setQuestionSeq("그만하기");
           setShowModal(true);
@@ -508,31 +404,7 @@ const VoiceGame = () => {
           setQuestionSeq("다음문제");
         }
       } else {
-        if (nickname && parseFloat(responseData.return_object.score) <= 1.7) {
-          const userCollection = collection(dbUser, "user");
-          const userQuery = query(userCollection, where("nickname", "==", nickname));
-          
-          getDocs(userQuery)
-            .then((querySnapshot) => {
-              querySnapshot.forEach((doc) => {
-                const userDocRef = doc.ref;
-                const recordCollectionRef = collection(userDocRef, "record");
 
-      // 새로운 문서 생성 및 데이터 저장
-              addDoc(recordCollectionRef, { score: responseData.return_object.score, word: text ,date : dateString, backgroundColor : currentBackgroundColor, circleUrl : currentCircle, icon : questions[currentQuestionIndex].icon})
-              .then((docRef) => {
-                console.log("데이터가 성공적으로 저장되었습니다. 문서 ID:", docRef.id);
-        })
-        .catch((error) => {
-          console.error("데이터 저장 중 오류가 발생했습니다:", error);
-        });
-    });
-  })
-  .catch((error) => {
-    console.error("문서 조회 중 오류가 발생했습니다:", error);
-  });
-          
-        }
         setModalMessage("아쉬워요😥" + "\n" + "다시 한 번 해볼까요?");
         if (currentQuestionIndex === questions.length - 1) {
           setLevel((prevLevel) => prevLevel + 1);
@@ -549,40 +421,16 @@ const VoiceGame = () => {
     }
   };
 
-  //메일 함수-------------------------
-
-  const sendVerificationEmail = () => {
-    const templateParams = {
-      to_email: mail,
-      from_name: "hayun4475@gmail.com",
-      message: "아동발음: 감댜    올바른 발음: 감자       점수: 5.4 \n 아동발음: 댜우    올바른 발음: 여우       점수: 4.4",
-    };
-    emailjs
-      .send(
-        "benary", // 서비스 ID
-        "benary", // 템플릿 ID
-        templateParams,
-        "0-0VI020CMJ10b6EE" // public-key
-      )
-      .then((response: any) => {
-        console.log("이메일이 성공적으로 보내졌습니다:", response);
-        // 이메일 전송 성공 처리 로직 추가
-      })
-      .catch((error : any) => {
-        console.error("이메일 보내기 실패:", error);
-        // 이메일 전송 실패 처리 로직 추가
-      });
-  };
-
   return (
     <View
       style={[styles.voiceGame, { backgroundColor: currentBackgroundColor }]}>
       {questions && questions.length > currentQuestionIndex && (
         <>
+       
           <Image
             style={styles.backgroundCircleIcon}
             contentFit="cover"
-            source={questions[currentQuestionIndex].circleUrl}
+            source= {questions[currentQuestionIndex].circleUrl}
           />
           <Text style={[styles.text, styles.textFlexBox1]}>
             {questions[currentQuestionIndex].icon}
@@ -610,10 +458,10 @@ const VoiceGame = () => {
               source={require("../assets/frame.png")}
             />
             <Text style={[styles.text5, styles.textTypo]}>
-              천천히 따라해보세요
-            </Text>
-          </View>
-        </Pressable>
+                천천히 따라해보세요
+              </Text>
+            </View>
+          </Pressable>
       ) : (
         <Pressable onPress={startRecording}>
           <View style={styles.repeatMessage}>
@@ -835,7 +683,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_31xl,
     backgroundColor: Color.tomato_200,
     borderStyle: "solid",
-    borderColor: "#FFFFFF",
+    borderColor: "#000",
     borderWidth: 1,
     width: "100%",
     height: 852,
@@ -844,4 +692,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VoiceGame;
+export default Review;
