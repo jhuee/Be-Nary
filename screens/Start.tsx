@@ -9,11 +9,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Start = () => {
   const navigation = useNavigation<any>();
-
+  // async function saveNickname() {
+  //   try {
+  //     await AsyncStorage.setItem('nickname', '하연');
+  //   } catch (e) {
+  //     console.error('Saving error: ', e);
+  //   }
+  // }
+  // saveNickname();
   //닉네임 가져오기
   const getNickname = async () => {
     try {
-      const nickname = await AsyncStorage.getItem("nickname")
+      let nickname = await AsyncStorage.getItem("nickname")
       if (nickname) {
         navigation.navigate("Home");
       } else {
@@ -23,14 +30,14 @@ const Start = () => {
       console.log(e.message);
     }
   };
-//닉네임 삭제하기
-// const removeNickname = async () => {
-//   try {
-//     await AsyncStorage.removeItem("nickname")
-//   } catch(e) {
-//   }
-// }
-
+// 닉네임 삭제하기
+const removeNickname = async () => {
+  try {
+    await AsyncStorage.removeItem("nickname")
+  } catch(e) {
+  }
+}
+removeNickname();
 
   return (
     <LinearGradient

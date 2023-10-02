@@ -4,18 +4,66 @@ import { StyleSheet, Text, Pressable, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
-
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import { dbUser } from "../firebaseConfig";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 const LevelUP = () => {
-
   const navigation = useNavigation<any>();
+  const [nickName, setNickname] = useState<string>("");
+  const userCollection = collection(dbUser, "user");
+  const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
+  //닉네임 가져오기
+  const updatelLevel = async () => {
+    if (nickName.length > 0) {
+      try {
+        const q = query(userCollection, where("nickname", "==", nickName));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          console.error("사용자 정보 없음");
+          return;
+        }
+        querySnapshot.forEach((doc) => {
+          const userDoc = doc.data();
+          if (userDoc) {
+            if (typeof userDoc.level === "number") {
+              setChaURL(userDoc.level);
+            } else {
+              console.error("잘못된 레벨");
+            }
+          } else {
+            console.error("사용자 정보 없음");
+          }
+        });
+      } catch (error) {
+        console.error("사용자 정보를 불러오는 중 오류 발생: ", error);
+      }
+    }
+  };
+  //닉네임 가져오기
+  const getNickname = async () => {
+    const storage = await AsyncStorage.getItem("nickname");
+    if (storage) setNickname(storage);
+    else console.log("닉네임 없음");
+  };
 
+  useEffect(() => {
+    getNickname();
+    updatelLevel();
+  }, []);
+
+  useEffect(() => {
+    if (nickName) updatelLevel();
+  }, [nickName]);
   return (
-    <LinearGradient
-      style={styles.levelUP}
-      locations={[0, 1]}
-      colors={["#fef7d3", "#f7cabc"]}
-    >
+    <LinearGradient style={styles.levelUP} colors={["#fef7d3", "#f7cabc"]}>
       <Image
         style={styles.levelUPChild}
         contentFit="cover"
@@ -61,11 +109,10 @@ const LevelUP = () => {
         contentFit="cover"
         source={require("../assets/ellipse-24.png")}
       />
-      <Text style={[styles.levelUp, styles.textTypo]}>{`LEVEL UP! `}</Text>
+      <Text style={[styles.levelUptxt, styles.textTypo]}>{`LEVEL UP! `}</Text>
       <Text style={[styles.text, styles.textTypo]}>{`구름이가 
 성장했어요!`}</Text>
       <Pressable
-
         style={[styles.okBtn, styles.btnLayout]}
         onPress={() => navigation.navigate("Home")}>
         <Image
@@ -74,12 +121,13 @@ const LevelUP = () => {
           source={require("../assets/ok-btn.png")}
         />
         <Text style={styles.text1}>확인</Text>
-
       </Pressable>
       <Image
         style={styles.eggIcon}
         contentFit="cover"
-        source={require("../assets/egg3.png")}
+        source={{
+          uri: `https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`,
+        }}
       />
     </LinearGradient>
   );
@@ -107,8 +155,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_9xl,
     textAlign: "center",
     fontFamily: FontFamily.juaRegular,
-
-    left: "50%",
     position: "absolute",
   },
   btnLayout: {
@@ -158,13 +204,11 @@ const styles = StyleSheet.create({
     top: 643,
     left: 351,
   },
-  levelUp: {
-    marginLeft: -115.5,
-    top: 65,
+  levelUptxt: {
+    top: "20%",
   },
   text: {
-    marginLeft: -108.5,
-    top: 535,
+    top: "65%",
   },
   okBtnIcon: {
     top: 0,
@@ -181,29 +225,23 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   okBtn: {
-    marginLeft: -134.5,
     top: 681,
-    left: "50%",
+    position: "absolute",
   },
   eggIcon: {
-    marginLeft: -144.5,
     top: 221,
     width: 289,
     height: 311,
-    left: "50%",
     position: "absolute",
   },
   levelUP: {
-    borderRadius: Border.br_31xl,
-    borderStyle: "solid",
-    borderColor: "#bcbcbc",
-    borderWidth: 1,
-    width: 393,
-    height: 852,
-    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    height: "100%",
     backgroundColor: "transparent",
   },
 });
-
 
 export default LevelUP;
