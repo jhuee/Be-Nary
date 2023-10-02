@@ -8,26 +8,29 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { collection, query, where, getDocs, addDoc, doc, setDoc, updateDoc} from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc} from "firebase/firestore";
 import { dbUser } from "../firebaseConfig";
 
-interface Question {
-  question: string;
-  icon: string;
-  backgroundColor: string;
-  circleUrl: string;
-}
+type Record = {
+    question: string;
+    score: number;
+    date: Date;
+    backgroundColor?: string; 
+    circleUrl: string; 
+    icon: string;
+   };
+   
 
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
-const VoiceGame = () => {
+const Review = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
   const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기
   const [nickname, setNickname] = useState<string | null>(null); // 닉네임 세팅
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Record[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //
   const [level, setLevel] = useState<number>(1); //레벨
   const navigation = useNavigation<any>();
@@ -62,30 +65,36 @@ const VoiceGame = () => {
   };
 
   //단어들을 DB로부터 가져오는 함수
-  const getQuestions = async (nickname: string): Promise<Question[]> => {
+  const getQuestions = async (nickname: string): Promise<Record[]> => {
     const userCollection = collection(dbUser, "user");
     const userQuery = query(userCollection, where("nickname", "==", nickname));
     const userSnapshot = await getDocs(userQuery);
-
+  
     if (userSnapshot.empty) throw new Error("User not found");
-
-    const cDay = userSnapshot.docs[0].data().cDay;
-    console.log(cDay);
-    const wordsCollection = collection(dbUser, "words");
-    const wordsQuery = query(wordsCollection, where("cDay", "==", cDay));
-    const wordsSnapshot = await getDocs(wordsQuery);
-
-    const questions = wordsSnapshot.docs.map((doc) => ({
+  
+    const userId = userSnapshot.docs[0].id; // 사용자 문서의 ID를 가져옵니다.
+    
+    // 사용자 문서 아래에 있는 'record' 컬렉션을 참조합니다.
+    const recordCollectionRef = collection(dbUser, "user", userId, "record");
+    
+    // 모든 레코드를 가져옵니다.
+    const recordSnapshot = await getDocs(recordCollectionRef);
+  
+    const questions = recordSnapshot.docs.map((doc) => ({
       question: doc.data().word,
-      icon: doc.data().icon,
+      score: doc.data().score,
+      date: doc.data().date,
       backgroundColor: doc.data().backgroundColor,
-      circleUrl: doc.data().circleUrl, // 이미지 파일 경로에 따라 수정하세요.
-    }));
-
-    console.log(questions); // questions 배열을 콘솔에 출력
-
-    return questions;
+      circleUrl: doc.data().circleUrl,
+      icon: doc.data().icon
+      // 필요한 다른 필드들도 여기에 추가하세요.
+  }));
+  
+  console.log(questions); 
+  
+  return questions;
   };
+  
 
   const fetchData = async (nickname: string) => {
     try {
@@ -395,31 +404,7 @@ const VoiceGame = () => {
           setQuestionSeq("다음문제");
         }
       } else {
-        if (nickname && parseFloat(responseData.return_object.score) <= 1.7) {
-          const userCollection = collection(dbUser, "user");
-          const userQuery = query(userCollection, where("nickname", "==", nickname));
 
-          getDocs(userQuery)
-            .then((querySnapshot) => {
-              querySnapshot.forEach((doc) => {
-                const userDocRef = doc.ref;
-                const recordCollectionRef = collection(userDocRef, "record");
-
-      // 새로운 문서 생성 및 데이터 저장
-              addDoc(recordCollectionRef, { score: responseData.return_object.score, word: text , date : dateString, backgroundColor : currentBackgroundColor, circleUrl : currentCircle, icon : questions[currentQuestionIndex].icon})
-              .then((docRef) => {
-                console.log("데이터가 성공적으로 저장되었습니다. 문서 ID:", docRef.id);
-        })
-        .catch((error) => {
-          console.error("데이터 저장 중 오류가 발생했습니다:", error);
-        });
-    });
-  })
-  .catch((error) => {
-    console.error("문서 조회 중 오류가 발생했습니다:", error);
-  });
-          
-        }
         setModalMessage("아쉬워요😥" + "\n" + "다시 한 번 해볼까요?");
         if (currentQuestionIndex === questions.length - 1) {
           setLevel((prevLevel) => prevLevel + 1);
@@ -698,7 +683,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_31xl,
     backgroundColor: Color.tomato_200,
     borderStyle: "solid",
-    borderColor: "#FFFFFF",
+    borderColor: "#000",
     borderWidth: 1,
     width: "100%",
     height: 852,
@@ -707,4 +692,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VoiceGame;
+export default Review;
