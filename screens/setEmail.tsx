@@ -233,10 +233,10 @@ const styles = StyleSheet.create({
   },
   text: {
     top: 97,
-    textShadowColor: "rgba(0, 0, 0, 0.05)",
+    textShadowColor: "#FF7979",
     textShadowOffset: {
-      width: 0,
-      height: 4,
+      width: -1,
+      height: 1,
     },
     textShadowRadius: 4,
   },
