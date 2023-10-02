@@ -5,26 +5,58 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {Slider, Icon} from "native-base"
+import { MaterialIcons } from "@expo/vector-icons";
+import { collection, query, where, getDocs, addDoc, doc, setDoc, updateDoc} from "firebase/firestore";
+import { dbUser } from "../firebaseConfig";
+
+const levelThresholds = [0,0,30,80,140,210]; // 각 레벨별 경험치 임계값
 
 const Home = () => {
   const navigation = useNavigation<any>();
   const [nickname, setNickname] = useState<string>("");
-
+  const [level, setLevel] = useState(0);
+  const [exp, setExp] = useState(0);
   //닉네임 가져오기
   useEffect(() => {
     const getNickname = async () => {
       const nickname = await AsyncStorage.getItem("nickname");
       if (nickname) {
         setNickname(nickname);
+          
+  const getUserData = async () => {
+    const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) throw new Error("User not found");
+    setLevel(userSnapshot.docs[0].data().level+1)
+    setExp(userSnapshot.docs[0].data().exp)
+    console.log(userSnapshot.docs[0].data())
+
+  };
+  getUserData();
       } else {
         console.log("닉네임 없음");
       }
     };
 
     getNickname();
-  }, []);
 
+  }, []);
+  
+
+
+  let nextLevelExp = levelThresholds[level];
+  let previousLevelExp = level > 0 ? levelThresholds[level - 1] : 0;
+
+  const percentageToNextLevel =
+    ((exp - previousLevelExp) / (nextLevelExp - previousLevelExp)) * 
+    100;
+
+    console.log(percentageToNextLevel+"dldpdyd")
   return (
+    <>
     <View style={styles.home}>
       <View style={[styles.iphone14Pro4, styles.home1Layout]}>
         <Image
@@ -110,6 +142,15 @@ const Home = () => {
           source={require("../assets/rectangle-12318.png")}
         />
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
+        <Text style={[styles.text6, styles.textTypo1]}>다음 레벨까지✨</Text>
+        <Slider style={[styles.levelBar, styles.iconLayout]} defaultValue={70} size="lg" colorScheme="#FAB9B4" w="75%" maxW="300">
+        <Slider.Track bg="#E6E0E9">
+          <Slider.FilledTrack bg="#FAB9B4" />
+        </Slider.Track>
+        <Slider.Thumb borderWidth="0" bg="transparent">
+          <Icon as={MaterialIcons} name="favorite" color="#FAB9B4" size="lg" />
+        </Slider.Thumb>
+      </Slider>
         <Image
           style={[styles.menuBarIcon, styles.iconLayout]}
           contentFit="cover"
@@ -189,6 +230,7 @@ const Home = () => {
         />
       </Pressable>
     </View>
+    </>
   );
 };
 
@@ -364,6 +406,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_xl,
     left: 61,
   },
+  text6: {
+    top: 315,
+    fontFamily: FontFamily.juaRegular,
+    color: Color.lightpink,
+    fontSize: FontSize.size_xl,
+    left: 61,
+  },
   menuBarIcon: {
     width: "6.87%",
     top: "5.16%",
@@ -390,6 +439,13 @@ const styles = StyleSheet.create({
     width: 98,
     height: 98,
     top: 18,
+    position: "absolute",
+  },
+  levelBar: {
+    top: 360,
+    width: 164,
+    height: 80,
+    left: 61,
     position: "absolute",
   },
   mypet: {
