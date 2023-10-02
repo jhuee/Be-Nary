@@ -8,7 +8,15 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { collection, query, where, getDocs, addDoc, doc, setDoc, updateDoc} from "firebase/firestore";
+import { dbUser } from "../firebaseConfig";
 
+interface Question {
+  question: string;
+  icon: string;
+  backgroundColor: string;
+  circleUrl: string;
+}
 
 // import { decode } from 'base-64'; // Import the decode function from 'base-64'
 
@@ -17,30 +25,34 @@ const VoiceGame = () => {
   const [sound, setSound] = useState<Audio.Sound | null>(null); // Define the state for the loaded audio sound
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
-  const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기 
-  const [nickname, setNickname] = useState<string>(""); //닉네임 세팅
-
+  const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기
+  const [nickname, setNickname] = useState<string | null>(null); // 닉네임 세팅
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //
   const [level, setLevel] = useState<number>(1); //레벨
   const navigation = useNavigation<any>();
+  // const [currentBackgroundColor, setCurrentBackgroundColor] = useState(
+  //   questions[0]?.backgroundColor || "" // 초기값을 빈 문자열로 설정하거나 원하는 기본 값으로 변경하세요.
+  // );
+  const [currentCircle, setCurrentCircle] = useState("");
+  const [currentBackgroundColor, setCurrentBackgroundColor] = useState(""); // 초기값을 빈 문자열로 설정하거나 원하는 기본 값으로 변경하세요.
+  const today = new Date();
+  const year = today.getFullYear(); // 년도
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // 월 (0부터 시작하므로 +1 필요)
+  const day = String(today.getDate()).padStart(2, "0"); // 일
+  
+  // 년/월/일 형식으로 저장할 문자열 생성
+  const dateString = `${year}/${month}/${day}`;
+  
 
   const [gameState, setGameState] = useState({
     currentQuestionIndex: 0,
-    level : 0,
+    level: 0,
     showModal: false,
-    modalMessage: '',
+    modalMessage: "",
   });
 
-  const getLevel = async () => {
-    try {
-      const levelValue = await AsyncStorage.getItem("level");
-      if (levelValue !== null) {
-        setLevel(Number(levelValue));
-        console.log("저장된 레벨:", levelValue);
-      }
-    } catch (error) {
-      console.error("레벨 정보 불러오기 오류:", error);
-    }
-  };
+
 
   const getNickname = async () => {
     const nickname = await AsyncStorage.getItem("nickname");
@@ -49,76 +61,118 @@ const VoiceGame = () => {
     }
   };
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  //단어들을 DB로부터 가져오는 함수
+  const getQuestions = async (nickname: string): Promise<Question[]> => {
+    const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
+    const userSnapshot = await getDocs(userQuery);
 
-  const questions = [
-    {
-      question: "사과",
-      icon: "🍎",
-      backgroundColor: Color.tomato_200,
-      circle: require("../assets/background-circle.png"),
-    },
-    {
-      question: "포도",
-      icon: "🍇",
-      backgroundColor: "#8347D0",
-      circle: require("../assets/purpleCircle.png"),
-    },
-    {
-      question: "요정",
-      icon: "🧚🏻‍♀",
-      backgroundColor: "#BBFF92",
-      circle: require("../assets/greenCircle.png"),
-    },
-    {
-      question: "원숭이",
-      icon: "🐵",
-      backgroundColor: "#FF9F46",
-      circle: require("../assets/orangeCircle.png"),
-    },
-    {
-      question: "토끼",
-      icon: "🐰",
-      backgroundColor: "#81CAFF",
-      circle: require("../assets/lightblueCircle.png"),
-    },
-    {
-      question: "병아리",
-      icon: "🐥",
-      backgroundColor: "#FFD542",
-      circle: require("../assets/yellowCircle.png"),
-    },
-    {
-      question: "사랑",
-      icon: "❤",
-      backgroundColor: "#FF9BBF",
-      circle: require("../assets/pinkCircle.png"),
-    },
-  ];
-  const [currentBackgroundColor, setCurrentBackgroundColor] = useState(
-    questions[0].backgroundColor
-  );
-  const [currentCircle, setCurrentCircle] = useState(questions[0].circle);
+    if (userSnapshot.empty) throw new Error("User not found");
 
+    const cDay = userSnapshot.docs[0].data().cDay;
+    console.log(cDay);
+    const wordsCollection = collection(dbUser, "words");
+    const wordsQuery = query(wordsCollection, where("cDay", "==", cDay));
+    const wordsSnapshot = await getDocs(wordsQuery);
 
-  const handleNextQuestion = async () =>  {
-    if (currentQuestionIndex === questions.length - 1) {
-      try {
-        await AsyncStorage.setItem("level", String(level + 1));
-        console.log("레벨 정보가 저장되었습니다.");
-      } catch (error) {
-        console.error("레벨 정보 저장 오류:", error); 
-      }
-      navigation.navigate('LevelUp'); // Le velUp 화면으로 이동
+    const questions = wordsSnapshot.docs.map((doc) => ({
+      question: doc.data().word,
+      icon: doc.data().icon,
+      backgroundColor: doc.data().backgroundColor,
+      circleUrl: doc.data().circleUrl, // 이미지 파일 경로에 따라 수정하세요.
+    }));
+
+    console.log(questions); // questions 배열을 콘솔에 출력
+
+    return questions;
+  };
+
+  const fetchData = async (nickname: string) => {
+    try {
+      const questionsFromFirebase = await getQuestions(nickname);
+      setQuestions(questionsFromFirebase);
+      console.log("퀘스천~" + questions); // questions
+      setCurrentBackgroundColor(
+        questionsFromFirebase[0]?.backgroundColor || ""
+      ); //
+      setCurrentCircle(questionsFromFirebase[0]?.circleUrl || "")
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (nickname) {
+      // Make sure nickname is not null
+      fetchData(nickname);
+    }
+  }, [nickname]); // Add nickname as a dependency
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      textToSpeech(questions[currentQuestionIndex].question);
     } else {
+      if (nickname) {
+        fetchData(nickname);
+      }
+    }
+  }, [questions]); //questions 변경될 때 실행
 
+  //다음 문제
+  const handleNextQuestion = async () => {
+    if (currentQuestionIndex === questions.length - 1) {
 
+    const userCollection = collection(dbUser, "user");
+    const userQuery = query(userCollection, where("nickname", "==", nickname));
+    
+    try {
+      const userSnapshot = await getDocs(userQuery);
+  
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data();
+        let currentExp = userData.exp || 0; // 기존의 경험치 값 (없으면 기본값은 0)
+        let currentCDay = userData.cDay || 1;
+        // 2. 활동으로 인한 새로운 경험치 계산 및 갱신
+        currentExp += 10;
+        currentCDay += 1;
+        // 3. 새로운 레벨 계산 (임계값 설정)
+        const levelThresholds = [40,80,140,210]; // 각 임계값 별로 랭크/레벨 설정
+        let currentLevel = levelThresholds.findIndex((threshold) => currentExp < threshold) + 1;
+  
+        // 최대 랭크/레벨 제한 설정 (옵션)
+        const maxLevel = levelThresholds.length + 1;
+        if (currentLevel > maxLevel) {
+          currentLevel = maxLevel;
+          currentExp = levelThresholds[maxLevel - 2]; // 최대 랭크/레벨일 경우 마지막 임계값으로 고정
+        }
+  
+	  // 변경된 정보 업데이트할 객체 생성
+	  const updateData: any= { exp: currentExp, level: currentLevel , cDay : currentCDay};
+
+	  await updateDoc(userSnapshot.docs[0].ref, updateData);
+      
+	  console.log("경험치가 성공적으로 업데이트되었습니다.");
+	  console.log("새로운 Level:", updateData.level);
+	  console.log("새로운 Exp:", updateData.exp);
+	  console.log("새로운 Class:", updateData.cDay);
+    } else {
+    	console.error("사용자 문서가 존재하지 않습니다.");
+    }
+    
+    navigation.navigate("LevelUp"); // LevelUp 화면으로 이동
+  
+     } catch (error) {
+       console.error("문서 조회 중 오류가 발생하였습니다:", error);
+     }
+    }
+   else {
       const nextIndex = (currentQuestionIndex + 1) % questions.length;
       setCurrentQuestionIndex(nextIndex);
-      setCurrentBackgroundColor(questions[nextIndex].backgroundColor);
-      setCurrentCircle(questions[nextIndex].circle);
-      textToSpeech(questions[nextIndex].question); // 다음 단어 출력
-  
+      setCurrentBackgroundColor(questions[nextIndex]?.backgroundColor || "");
+
+      setCurrentCircle(questions[nextIndex].circleUrl); // 이미지 파일 경로에 따라 수정하세요.
+
+      textToSpeech(questions[nextIndex].question);
     }
   };
 
@@ -182,7 +236,6 @@ const VoiceGame = () => {
       }
     };
   });
-  getLevel(); // 앱이 시작될 때 저장된 레벨을 불러옴
 
   getNickname();
   useEffect(() => {
@@ -224,7 +277,14 @@ const VoiceGame = () => {
           console.log(error);
         });
     }
-    textToSpeech(questions[currentQuestionIndex].question);
+    if (questions[currentQuestionIndex]) {
+      textToSpeech(questions[currentQuestionIndex].question);
+    } else {
+      if (nickname) {
+        // 안 가져와지만 다시 가져와
+        fetchData(nickname);
+      }
+    }
     const fileUri = `${FileSystem.documentDirectory}output.mp3`;
     const saveTTS = async (audioContent: Uint8Array): Promise<void> => {
       await FileSystem.writeAsStringAsync(fileUri, audioContent.toString(), {
@@ -326,23 +386,48 @@ const VoiceGame = () => {
       // 점수에 따라 ModalMessage 설정
       if (parseFloat(responseData.return_object.score) > 1.7) {
         setModalMessage(`${nickname}~ 참 잘했어요!`);
-        if(currentQuestionIndex === questions.length - 1) {
+        if (currentQuestionIndex === questions.length - 1) {
           setLevel((prevLevel) => prevLevel + 1);
-          setQuestionSeq("그만하기")          
+          setQuestionSeq("그만하기");
           setShowModal(true);
-          console.log(level)
+          console.log(level);
         } else {
-          setQuestionSeq("다음문제")
+          setQuestionSeq("다음문제");
         }
       } else {
+        if (nickname && parseFloat(responseData.return_object.score) <= 1.7) {
+          const userCollection = collection(dbUser, "user");
+          const userQuery = query(userCollection, where("nickname", "==", nickname));
+          
+          getDocs(userQuery)
+            .then((querySnapshot) => {
+              querySnapshot.forEach((doc) => {
+                const userDocRef = doc.ref;
+                const recordCollectionRef = collection(userDocRef, "record");
+
+      // 새로운 문서 생성 및 데이터 저장
+              addDoc(recordCollectionRef, { score: responseData.return_object.score, word: text , date : dateString})
+              .then((docRef) => {
+                console.log("데이터가 성공적으로 저장되었습니다. 문서 ID:", docRef.id);
+        })
+        .catch((error) => {
+          console.error("데이터 저장 중 오류가 발생했습니다:", error);
+        });
+    });
+  })
+  .catch((error) => {
+    console.error("문서 조회 중 오류가 발생했습니다:", error);
+  });
+          
+        }
         setModalMessage("아쉬워요😥" + "\n" + "다시 한 번 해볼까요?");
-        if(currentQuestionIndex === questions.length - 1) {
+        if (currentQuestionIndex === questions.length - 1) {
           setLevel((prevLevel) => prevLevel + 1);
-          setQuestionSeq("그만하기")          
+          setQuestionSeq("그만하기");
           setShowModal(true);
-          console.log(level)
+          console.log(level);
         } else {
-          setQuestionSeq("다음문제")
+          setQuestionSeq("다음문제");
         }
       }
       setShowModal(true);
@@ -354,17 +439,25 @@ const VoiceGame = () => {
   return (
     <View
       style={[styles.voiceGame, { backgroundColor: currentBackgroundColor }]}>
-      <Image
-        style={styles.backgroundCircleIcon}
-        contentFit="cover"
-        source={questions[currentQuestionIndex].circle}
-      />
-      <Text style={[styles.text, styles.textFlexBox1]}>
-        {questions[currentQuestionIndex].icon}
-      </Text>
-      <Text style={[styles.text1, styles.textFlexBox]}>
-        {questions[currentQuestionIndex].question}
-      </Text>
+      {questions && questions.length > currentQuestionIndex && (
+        <>
+       
+          <Image
+            style={styles.backgroundCircleIcon}
+            contentFit="cover"
+            source= {questions[currentQuestionIndex].circleUrl}
+          />
+          <Text style={[styles.text, styles.textFlexBox1]}>
+            {questions[currentQuestionIndex].icon}
+          </Text>
+          <Text style={[styles.text1, styles.textFlexBox]}>
+            {questions[currentQuestionIndex].question}
+          </Text>
+        </>
+      )}
+      {!questions || questions.length <= currentQuestionIndex ? (
+        <Text> 대충 스피너</Text> // 로딩 스피너 추가
+      ) : null}
 
       {recording ? (
         <Pressable onPress={stopRecording}>
@@ -372,31 +465,30 @@ const VoiceGame = () => {
             style={[styles.micIcon, styles.text1Position]}
             contentFit="cover"
             source={require("../assets/micIcon.png")}
-            />
+          />
           <View style={styles.repeatMessage}>
-        <Image
-          style={styles.frameIcon}
-          contentFit="cover"
-          source={require("../assets/frame.png")}
-        />
-        <Text style={[styles.text5, styles.textTypo]}>
-         천천히 따라해보세요
-        </Text>
-      </View>
-        </Pressable>
-           
+            <Image
+              style={styles.frameIcon}
+              contentFit="cover"
+              source={require("../assets/frame.png")}
+            />
+            <Text style={[styles.text5, styles.textTypo]}>
+                천천히 따라해보세요
+              </Text>
+            </View>
+          </Pressable>
       ) : (
         <Pressable onPress={startRecording}>
           <View style={styles.repeatMessage}>
-        <Image
-          style={styles.frameIcon}
-          contentFit="cover"
-          source={require("../assets/frame.png")}
-        />
-        <Text style={[styles.text5, styles.textTypo]}>
-          발음을 잘 들어보세요!
-        </Text>
-      </View>
+            <Image
+              style={styles.frameIcon}
+              contentFit="cover"
+              source={require("../assets/frame.png")}
+            />
+            <Text style={[styles.text5, styles.textTypo]}>
+              발음을 잘 들어보세요!
+            </Text>
+          </View>
         </Pressable>
       )}
 
@@ -412,7 +504,7 @@ const VoiceGame = () => {
           source={require("../assets/egg1.png")}
         />
       </View> */}
-      
+
       <Modal isOpen={showModal}>
         <View style={styles.messageBox}>
           <Text style={[styles.text2, styles.textTypo]}>{modalMessage}</Text>
@@ -427,7 +519,9 @@ const VoiceGame = () => {
                 contentFit="cover"
                 source={require("../assets/next-mission.png")}
               />
-              <Text style={[styles.text3, styles.textFlexBox1]}>{questionSeq}</Text>
+              <Text style={[styles.text3, styles.textFlexBox1]}>
+                {questionSeq}
+              </Text>
             </Pressable>
           </View>
           <View style={[styles.retryMission, styles.missionLayout1]}>
@@ -574,7 +668,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   repeatMessage: {
-
     left: 38,
     width: 381,
     height: 62,

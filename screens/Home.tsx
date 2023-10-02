@@ -5,6 +5,8 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {Slider, Icon} from "native-base"
+import { MaterialIcons } from "@expo/vector-icons";
 import { dbUser } from "../firebaseConfig";
 import {
   collection,
@@ -12,13 +14,15 @@ import {
   query,
   where,
   getDocs,
-  updateDoc,
 } from "firebase/firestore";
+
+const levelThresholds = [0,0,30,80,140,210]; // 각 레벨별 경험치 임계값
 
 const Home = () => {
   const navigation = useNavigation<any>();
   const [nickName, setNickname] = useState<string>("");
-  const userCollection = collection(dbUser, "user");
+  const [level, setLevel] = useState(0);
+  const [exp, setExp] = useState(0);  const userCollection = collection(dbUser, "user");
   const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
   //닉네임 가져오기
   const updatelLevel = async () => {
@@ -33,6 +37,8 @@ const Home = () => {
         querySnapshot.forEach((doc) => {
           const userDoc = doc.data();
           if (userDoc) {
+            setLevel(userDoc.level);
+            setExp(userDoc.exp);
             if (userDoc.level === 1) setChaURL(1);
             else if (userDoc.level === 2) setChaURL(2);
             else if (userDoc.level === 3) setChaURL(3);
@@ -65,10 +71,16 @@ const Home = () => {
     if (nickName) updatelLevel();
   }, [nickName]);
 
-  // useEffect(() => {
-  //   getNickname();
-  //   updatelLevel();
-  // },[chaURL]);
+
+  
+  let nextLevelExp = levelThresholds[level];
+  let previousLevelExp = level > 0 ? levelThresholds[level - 1] : 0;
+
+  const percentageToNextLevel =
+    ((exp - previousLevelExp) / (nextLevelExp - previousLevelExp)) * 
+    100;
+
+    console.log(percentageToNextLevel+"dldpdyd")
 
   return (
     <View style={styles.home}>
@@ -156,6 +168,21 @@ const Home = () => {
           source={require("../assets/rectangle-12318.png")}
         />
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
+        <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
+        <Text style={[styles.text6, styles.textTypo1]}>다음 레벨까지✨</Text>
+        <Slider style={[styles.levelBar, styles.iconLayout]} defaultValue={70} size="lg" colorScheme="#FAB9B4" w="75%" maxW="300">
+        <Slider.Track bg="#E6E0E9">
+          <Slider.FilledTrack bg="#FAB9B4" />
+        </Slider.Track>
+        <Slider.Thumb borderWidth="0" bg="transparent">
+          <Icon as={MaterialIcons} name="favorite" color="#FAB9B4" size="lg" />
+        </Slider.Thumb>
+      </Slider>
+        <Image
+          style={[styles.menuBarIcon, styles.iconLayout]}
+          contentFit="cover"
+          source={require("../assets/menu-bar.png")}
+        />
         <Pressable
           style={[styles.mypet, styles.mypetLayout]}
           onPress={() => navigation.navigate("sing")}>
@@ -403,6 +430,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_xl,
     left: 61,
   },
+  text6: {
+    top: 315,
+    fontFamily: FontFamily.juaRegular,
+    color: Color.lightpink,
+    fontSize: FontSize.size_xl,
+    left: 61,
+  },
   menuBarIcon: {
     width: "6.87%",
     top: "5.16%",
@@ -429,6 +463,13 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     top: 5,
+    position: "absolute",
+  },
+  levelBar: {
+    top: 360,
+    width: 164,
+    height: 80,
+    left: 61,
     position: "absolute",
   },
   mypet: {

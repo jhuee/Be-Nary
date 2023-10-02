@@ -40,14 +40,6 @@ const SetEmail = () => {
   };
 
   const addDB = async () => {
-    try {
-      // 이메일 유효성 검사
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(inputEmail)) {
-        Alert.alert("비나리", "올바른 이메일 형식을 입력해주세요.");
-        return;
-      }
-
       await addDoc(userCollection, {
         nickname: nickName,
         email: inputEmail,
@@ -56,11 +48,7 @@ const SetEmail = () => {
         cDay: 1,
       });
       console.log("문서 추가 성공");
-    } catch (error) {
-      console.error("문서 추가 실패: ", error);
-      throw error;
     }
-  };
 
   const goHome = async () => {
     try {
