@@ -185,7 +185,7 @@ const Home = () => {
         />
         <Pressable
           style={[styles.mypet, styles.mypetLayout]}
-          onPress={() => navigation.navigate("sing")}>
+          onPress={() => navigation.navigate("Sing")}>
           <Pressable style={styles.mypetBoxPosition}>
             <Image
               style={styles.icon}

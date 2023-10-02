@@ -37,7 +37,6 @@ const removeNickname = async () => {
   } catch(e) {
   }
 }
-removeNickname();
 
   return (
     <LinearGradient

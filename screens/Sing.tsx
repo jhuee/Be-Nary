@@ -230,7 +230,6 @@ const Sing = () => {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       const userSing: string | null | undefined = await speechtoText(uri);
-
       if (userSing) {
         const result = compareStrings(userSing, text);
         setComparedResult(result);
@@ -274,10 +273,11 @@ const Sing = () => {
       }
     }
 
-    setScore(
+    const roundedScore = Math.round(
       ((correctSingArr.length - incorrectCount) / correctSingArr.length) * 100
-    ); // 백분율 점수 계산
-    console.log("Score: ", score); // 점수 출력
+    );
+    setScore(roundedScore); // 백분율 점수 반올림 계산
+    console.log("Score: ", roundedScore); // 점수 출력
 
     setNextsing(true);
     return result;
@@ -516,7 +516,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     marginLeft: 20,
     marginRight: 20,
-    top: 50  },
+    top: 50,
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

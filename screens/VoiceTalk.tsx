@@ -48,6 +48,7 @@ const VoiceTalk = () => {
             else if (userDoc.level === 3) setChaURL(3);
             else if (userDoc.level === 4) setChaURL(4);
             else if (userDoc.level === 5) setChaURL(5);
+            else if (userDoc.level === 5) setChaURL(6);
             else console.error("잘못된 레벨");
           } else {
             console.error("사용자 정보 없음");
