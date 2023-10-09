@@ -31,6 +31,11 @@ const VoiceTalk = () => {
   const userCollection = collection(dbUser, "user");
   const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
   //닉네임 가져오기
+
+
+
+
+  
   const updatelLevel = async () => {
     if (nickName.length > 0) {
       try {
@@ -80,16 +85,20 @@ const VoiceTalk = () => {
   //response 가져오기
   useEffect(() => {
     const getAI = async () => {
-      const ai = await AsyncStorage.getItem("ai");
-      if (ai) {
-        setAIResponse(ai);
-      } else {
-        console.log("없음");
-      }
+        const ai = await AsyncStorage.getItem("ai");
+        if (ai) {
+            setAIResponse(ai);
+        } else {
+            console.log("없음");
+        }
     };
-
-    getAI();
-  }, [aiResponse]);
+    // setInterval로 3초마다 getAI 함수를 호출합니다.
+    const interval = setInterval(() => {
+        getAI();
+    }, 1000); // 3000ms = 3초
+    // 컴포넌트가 unmount될 때 interval을 제거합니다.
+    return () => clearInterval(interval);
+}, [aiResponse]);
 
   // 녹음을 시작하는 함수
   async function startRecording() {

@@ -31,13 +31,13 @@ const Start = () => {
     }
   };
 // 닉네임 삭제하기
-const removeNickname = async () => {
-  try {
-    await AsyncStorage.removeItem("nickname")
-  } catch(e) {
-  }
- }
-// removeNickname();/
+// const removeNickname = async () => {
+//   try {
+//     await AsyncStorage.removeItem("nickname")
+//   } catch(e) {
+//   }
+//  }
+// removeNickname();
 
   return (
     <LinearGradient

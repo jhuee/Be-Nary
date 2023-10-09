@@ -21,6 +21,7 @@ import {
   getDocs,
   updateDoc,
 } from "firebase/firestore";
+import emailjs from "emailjs-com";
 
 const SetEmail = () => {
   const navigation = useNavigation<any>();
@@ -40,20 +41,38 @@ const SetEmail = () => {
   };
 
   const addDB = async () => {
-      await addDoc(userCollection, {
-        nickname: nickName,
-        email: inputEmail,
-        exp: 0,
-        level: 1,
-        cDay: 1,
+    await addDoc(userCollection, {
+      nickname: nickName,
+      email: inputEmail,
+      exp: 0,
+      level: 1,
+      cDay: 1,
+    });
+    console.log("문서 추가 성공");
+  };
+  const sendEmail = () => {
+    const templateParams = {
+      to_email: inputEmail,
+      from_name: "benary",
+    };
+    emailjs
+      .send(
+        "benary", // 서비스 ID
+        "benary_start", // 템플릿 ID
+        templateParams,
+        "0-0VI020CMJ10b6EE" // public-key
+      )
+      .then((response: any) => {
+        console.log("이메일이 성공적으로 보내졌습니다:", response);
+        // 이메일 전송 성공 처리 로직 추가
       });
-      console.log("문서 추가 성공");
-    }
+  };
 
   const goHome = async () => {
     try {
       await addDB(); // addDB가 성공적으로 완료될 때까지 기다림
       navigation.navigate("Home"); // addDB가 성공하면 네비게이션
+      sendEmail();
     } catch (error) {
       console.error("네비게이션 실패: ", error);
     }
@@ -62,6 +81,7 @@ const SetEmail = () => {
   useEffect(() => {
     getNickname();
   });
+
   return (
     <KeyboardAvoidingView style={styles.emailSet}>
       <Text style={[styles.beNary, styles.textTypo]}>Be Nary</Text>

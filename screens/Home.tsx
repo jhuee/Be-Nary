@@ -202,7 +202,7 @@ const Home = () => {
           />
         </Pressable>
         <Pressable
-          onPress={() => navigation.navigate("Sing")}
+          onPress={() => navigation.navigate("LevelUp")}
           style={[styles.review, styles.chatPosition]}>
           <Image
             style={[styles.reviewChild, styles.mypetBoxPosition]}
@@ -413,14 +413,20 @@ const styles = StyleSheet.create({
   beNary: {
     top: 36,
     left: 147,
+    textShadowColor: Color.lightpink,
+    textShadowOffset: {
+      width: -1,
+      height: 1,
+    },
+    textShadowRadius: 4,
   },
   text2: {
     top: 110,
     left: 84,
-    textShadowColor: "rgba(0, 0, 0, 0.05)",
+    textShadowColor: Color.lightpink,
     textShadowOffset: {
-      width: 0,
-      height: 4,
+      width: -1,
+      height: 1,
     },
     textShadowRadius: 4,
   },

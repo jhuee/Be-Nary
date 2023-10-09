@@ -15,6 +15,8 @@ import {
   getDocs,
   updateDoc,
 } from "firebase/firestore";
+import todaymail from "./mail";
+
 const LevelUP = () => {
   const navigation = useNavigation<any>();
   const [nickName, setNickname] = useState<string>("");
@@ -50,13 +52,17 @@ const LevelUP = () => {
   //닉네임 가져오기
   const getNickname = async () => {
     const storage = await AsyncStorage.getItem("nickname");
-    if (storage) setNickname(storage);
-    else console.log("닉네임 없음");
+    if (storage) {
+      setNickname(storage);
+      todaymail(storage);
+
+    } else console.log("닉네임 없음");
   };
 
   useEffect(() => {
     getNickname();
     updatelLevel();
+
   }, []);
 
   useEffect(() => {

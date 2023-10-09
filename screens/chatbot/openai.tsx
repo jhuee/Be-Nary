@@ -1,13 +1,16 @@
 //ai response값을 return하는 openai.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Configuration, OpenAIApi } from "openai";
+import { RefreshControl } from "react-native";
 import "react-native-url-polyfill/auto";
 
 const configuration = new Configuration({
-  apiKey: ""
+  apiKey: "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"
 });
 const openai = new OpenAIApi(configuration);
+
 export default async function openAI(text: string) {
+  
   try {
     const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -25,10 +28,9 @@ export default async function openAI(text: string) {
 
     if (aiResponse) {
       const setAI = async () => {
-        const ai = await AsyncStorage.setItem("ai", aiResponse);
+      const ai = await AsyncStorage.setItem("ai", aiResponse);
       };
       setAI();
-      console.log("AI 응답:", aiResponse);
       return aiResponse;
     } else {
       console.error("AI 응답이 비어있습니다.");
@@ -36,6 +38,5 @@ export default async function openAI(text: string) {
     }
   } catch (error) {
     console.error("OpenAI API 호출 중 오류가 발생하였습니다:", error);
-    return "OpenAI API 호출 중 오류 발생";
   }
 }

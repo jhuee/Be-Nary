@@ -100,7 +100,6 @@ const Review = () => {
     try {
       const questionsFromFirebase = await getQuestions(nickname);
       setQuestions(questionsFromFirebase);
-      console.log("퀘스천~" + questions); // questions
       setCurrentBackgroundColor(
         questionsFromFirebase[0]?.backgroundColor || ""
       ); //
