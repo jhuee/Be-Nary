@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   beNary: {
     top: 36,
-    left: 147,
+    alignSelf:"center",
   },
   nameStartChild: {
     top: 148,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   text: {
     top: 97,
-    left: 57,
+    alignSelf:"center",
     textShadowColor: "#FF7979",
     textShadowOffset: {
       width: -1,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   eggIcon: {
     top: 221,
-    left: 53,
+    alignSelf:"center",
     width: 289,
     height: 311,
     position: "absolute",
@@ -272,7 +272,8 @@ const styles = StyleSheet.create({
   },
   textinput: {
     top: 5,
-    left:100,
+    alignSelf:"center",
+    textAlign:"center",
     width: "40%",
     height: "100%",
     fontFamily: FontFamily.juaRegular,
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   nameStart: {
     backgroundColor: "#fef7d3",
     width: "100%",
-    height: 852,
+    height:"100%",
     overflow: "hidden",
   },
 });

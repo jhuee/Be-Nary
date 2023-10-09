@@ -265,13 +265,13 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     position: "absolute",
-    height: 900,
-    width: 393,
+    height: "100%",
+    width: "100%",
   },
   childLayout: {
-    height: 850,
-    width: 430,
-    position: "relative",
+    height: "100%",
+    width: "100%",
+    position: "absolute",
   },
   iphone14ChildLayout: {
     height: 29,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   iphone14Pro4Child: {
     top: 385,
     left: 0,
-    width: 425,
+    width: "100%",
   },
   iphone14Pro4Item: {
     width: 408,
@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.sFProBold,
   },
   iphone14Pro4: {
+    flex:1
   },
   homeChild: {
     top: 0,
@@ -409,7 +410,7 @@ const styles = StyleSheet.create({
   },
   beNary: {
     top: 36,
-    left: 147,
+    alignSelf:"center",
     textShadowColor: Color.lightpink,
     textShadowOffset: {
       width: -1,
@@ -419,7 +420,7 @@ const styles = StyleSheet.create({
   },
   text2: {
     top: 1,
-    left: 84,
+    alignSelf:"center",
     textShadowColor: Color.pink,
     textShadowOffset: {
       width: -1,
@@ -430,7 +431,7 @@ const styles = StyleSheet.create({
   },
   text02: {
     top: 110,
-    left: 84,
+    alignSelf:"center",
     textShadowColor: Color.lightpink,
     textShadowOffset: {
       width: -1,
@@ -550,8 +551,8 @@ const styles = StyleSheet.create({
     top: 419,
   },
   home: {
-    height:"100%",
-    width: "100%",
+    display:"flex",
+    flex: 1,
   },
 });
 
