@@ -695,10 +695,6 @@ const styles = StyleSheet.create({
     width: 339,
   },
   voiceGame: {
-    borderRadius: Border.br_31xl,
-    backgroundColor: Color.tomato_200,
-    borderStyle: "solid",
-    borderColor: "#FFFFFF",
     borderWidth: 1,
     width: "100%",
     height: 852,

@@ -198,10 +198,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   voiceTalk: {
-    borderRadius: Border.br_31xl,
-    borderStyle: "solid",
-    borderColor: "#000",
-    borderWidth: 1,
     flex: 1,
     width: "100%",
     height: 852,

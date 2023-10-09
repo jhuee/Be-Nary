@@ -291,12 +291,7 @@ const styles = StyleSheet.create({
     left: 55,
   },
   nameStart: {
-    borderRadius: Border.br_31xl,
     backgroundColor: "#fef7d3",
-    borderStyle: "solid",
-    borderColor: "#bcbcbc",
-    borderWidth: 1,
-    flex: 1,
     width: "100%",
     height: 852,
     overflow: "hidden",

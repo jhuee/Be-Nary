@@ -16,7 +16,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-const levelThresholds = [0,0,30,80,140,210]; // 각 레벨별 경험치 임계값
+const levelThresholds = [30,80,140,210]; // 각 레벨별 경험치 임계값
 
 const Home = () => {
   const navigation = useNavigation<any>();
@@ -88,13 +88,13 @@ const Home = () => {
         <Image
           style={[styles.iphone14Pro4Child, styles.childLayout]}
           contentFit="cover"
-          source={require("../assets/rectangle-12319.png")}
+          source={require("../assets/home_background.png")}
         />
-        <Image
+        {/* <Image
           style={styles.iphone14Pro4Item}
           contentFit="cover"
           source={require("../assets/rectangle-12317.png")}
-        />
+        /> */}
         <Image
           style={styles.iphone14Pro4Inner}
           contentFit="cover"
@@ -123,16 +123,22 @@ const Home = () => {
         <Text style={[styles.text1, styles.textTypo1]}>구름이의 성장단계</Text>
       </View>
       <View style={[styles.home1, styles.home1Layout]}>
-        <Image
-          style={[styles.homeChild, styles.childLayout]}
-          contentFit="cover"
-          source={require("../assets/rectangle-123191.png")}
-        />
-        <Image
-          style={styles.iphone14Pro4Item}
-          contentFit="cover"
-          source={require("../assets/rectangle-123171.png")}
-        />
+
+<Image
+    style={[styles.homeChild, styles.childLayout]}
+    contentFit="cover"
+    source={require("../assets/home_background.png")}
+  />
+  {/* <Image
+    style={[styles.homeChild, styles.childLayout]}
+    contentFit="cover"
+    source={require("../assets/rectangle-123191.png")}
+  /> */}
+  {/* <Image
+    style={styles.iphone14Pro4Item}
+    contentFit="cover"
+    source={require("../assets/rectangle-123171.png")}
+  /> */}
         <Text style={[styles.beNary, styles.text2Typo]}>Be Nary</Text>
         <Image
           style={styles.iphone14Pro4Inner}
@@ -170,7 +176,7 @@ const Home = () => {
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
         <Text style={[styles.text6, styles.textTypo1]}>다음 레벨까지✨</Text>
-        <Slider style={[styles.levelBar, styles.iconLayout]} defaultValue={70} size="lg" colorScheme="#FAB9B4" w="75%" maxW="300">
+        <Slider style={[styles.levelBar, styles.iconLayout]} defaultValue={5} size="lg" colorScheme="#FAB9B4" w="75%" maxW="300">
         <Slider.Track bg="#E6E0E9">
           <Slider.FilledTrack bg="#FAB9B4" />
         </Slider.Track>
@@ -259,13 +265,13 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     position: "absolute",
-    height: 852,
+    height: 900,
     width: 393,
   },
   childLayout: {
-    height: 468,
-    width: 425,
-    position: "absolute",
+    height: 850,
+    width: 430,
+    position: "relative",
   },
   iphone14ChildLayout: {
     height: 29,
@@ -398,8 +404,8 @@ const styles = StyleSheet.create({
   iphone14Pro4: {
   },
   homeChild: {
-    top: 399,
-    left: 1,
+    top: 0,
+    left: 0,
   },
   beNary: {
     top: 36,
@@ -544,8 +550,8 @@ const styles = StyleSheet.create({
     top: 419,
   },
   home: {
-    height: 852,
-    width: 393,
+    height:"100%",
+    width: "100%",
   },
 });
 

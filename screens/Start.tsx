@@ -148,10 +148,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   start: {
-    borderRadius: Border.br_31xl,
-    borderStyle: "solid",
-    borderColor: "#8e7d7d",
-    borderWidth: 1,
     flex: 1,
     width: "100%",
     height: 852,
