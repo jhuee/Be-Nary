@@ -242,6 +242,7 @@ const VoiceGame = () => {
 
   getNickname();
   useEffect(() => {
+    stopRecording();
     function textToSpeech(_text: string) {
       const url =
         "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
@@ -702,10 +703,6 @@ const styles = StyleSheet.create({
     width: 339,
   },
   voiceGame: {
-    borderRadius: Border.br_31xl,
-    backgroundColor: Color.tomato_200,
-    borderStyle: "solid",
-    borderColor: "#FFFFFF",
     borderWidth: 1,
     width: "100%",
     height: 852,

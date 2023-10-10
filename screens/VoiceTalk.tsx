@@ -32,10 +32,6 @@ const VoiceTalk = () => {
   const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
   //닉네임 가져오기
 
-
-
-
-  
   const updatelLevel = async () => {
     if (nickName.length > 0) {
       try {
@@ -64,41 +60,41 @@ const VoiceTalk = () => {
         console.error("사용자 정보를 불러오는 중 오류 발생: ", error);
       }
     }
-  }
+  };
   //닉네임 가져오기
   const getNickname = async () => {
     const storage = await AsyncStorage.getItem("nickname");
     if (storage) setNickname(storage);
     else console.log("닉네임 없음");
   };
-  
+
   useEffect(() => {
+    stopRecording();
     getNickname();
     updatelLevel();
   }, []);
-  
+
   useEffect(() => {
     if (nickName) updatelLevel();
   }, [nickName]);
 
-
   //response 가져오기
   useEffect(() => {
     const getAI = async () => {
-        const ai = await AsyncStorage.getItem("ai");
-        if (ai) {
-            setAIResponse(ai);
-        } else {
-            console.log("없음");
-        }
+      const ai = await AsyncStorage.getItem("ai");
+      if (ai) {
+        setAIResponse(ai);
+      } else {
+        console.log("없음");
+      }
     };
     // setInterval로 3초마다 getAI 함수를 호출합니다.
     const interval = setInterval(() => {
-        getAI();
+      getAI();
     }, 1000); // 3000ms = 3초
     // 컴포넌트가 unmount될 때 interval을 제거합니다.
     return () => clearInterval(interval);
-}, [aiResponse]);
+  }, [aiResponse]);
 
   // 녹음을 시작하는 함수
   async function startRecording() {
@@ -128,6 +124,7 @@ const VoiceTalk = () => {
       const uri = recording.getURI();
       console.log(uri);
       spechtoText(uri);
+      setRecording(null);
       await recording.stopAndUnloadAsync();
     }
     await Audio.setAudioModeAsync({
@@ -144,9 +141,8 @@ const VoiceTalk = () => {
       <Image
         style={styles.eggIcon}
         contentFit="cover"
-        source={ `https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`}
+        source={`https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`}
       />
-
 
       {recording ? (
         <Pressable onPress={stopRecording}>
@@ -208,10 +204,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   voiceTalk: {
-    borderRadius: Border.br_31xl,
-    borderStyle: "solid",
-    borderColor: "#000",
-    borderWidth: 1,
     flex: 1,
     width: "100%",
     height: 852,

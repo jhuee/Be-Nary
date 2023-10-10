@@ -308,11 +308,7 @@ const styles = StyleSheet.create({
     top: 599,
   },
   emailSet: {
-    borderRadius: Border.br_31xl,
     backgroundColor: "#fef7d3",
-    borderStyle: "solid",
-    borderColor: "#bcbcbc",
-    borderWidth: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

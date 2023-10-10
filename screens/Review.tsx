@@ -100,6 +100,7 @@ const Review = () => {
     try {
       const questionsFromFirebase = await getQuestions(nickname);
       setQuestions(questionsFromFirebase);
+      console.log("퀘스천~" + questions); // questions
       setCurrentBackgroundColor(
         questionsFromFirebase[0]?.backgroundColor || ""
       ); //
@@ -247,6 +248,7 @@ const Review = () => {
 
   getNickname();
   useEffect(() => {
+    stopRecording();
     function textToSpeech(_text: string) {
       const url =
         "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
