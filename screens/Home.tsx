@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Slider, Icon} from "native-base"
 import { MaterialIcons } from "@expo/vector-icons";
 import { dbUser } from "../firebaseConfig";
+import { Audio } from "expo-av";
 import {
   collection,
   addDoc,
@@ -16,10 +17,11 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-const levelThresholds = [0,0,30,80,140,210]; // 각 레벨별 경험치 임계값
+const levelThresholds = [30,80,140,210]; // 각 레벨별 경험치 임계값
 
 const Home = () => {
   const navigation = useNavigation<any>();
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [nickName, setNickname] = useState<string>("");
   const [level, setLevel] = useState(0);
   const [exp, setExp] = useState(0);  const userCollection = collection(dbUser, "user");
@@ -61,8 +63,20 @@ const Home = () => {
     if (storage) setNickname(storage);
     else console.log("닉네임 없음");
   };
-  
+  const stopRecording = async () => {
+    console.log("Stopping recording..");
+    if (recording) {
+      setRecording(null);
+      await recording.stopAndUnloadAsync();
+    }
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+    });
+    setRecording(null); // 녹음 종료 시 recording 상태를 다시 null로 설정
+  };
+
   useEffect(() => {
+    stopRecording();
     getNickname();
     updatelLevel();
   }, []);
@@ -88,13 +102,13 @@ const Home = () => {
         <Image
           style={[styles.iphone14Pro4Child, styles.childLayout]}
           contentFit="cover"
-          source={require("../assets/rectangle-12319.png")}
+          source={require("../assets/home_background.png")}
         />
-        <Image
+        {/* <Image
           style={styles.iphone14Pro4Item}
           contentFit="cover"
           source={require("../assets/rectangle-12317.png")}
-        />
+        /> */}
         <Image
           style={styles.iphone14Pro4Inner}
           contentFit="cover"
@@ -123,16 +137,22 @@ const Home = () => {
         <Text style={[styles.text1, styles.textTypo1]}>구름이의 성장단계</Text>
       </View>
       <View style={[styles.home1, styles.home1Layout]}>
-        <Image
-          style={[styles.homeChild, styles.childLayout]}
-          contentFit="cover"
-          source={require("../assets/rectangle-123191.png")}
-        />
-        <Image
-          style={styles.iphone14Pro4Item}
-          contentFit="cover"
-          source={require("../assets/rectangle-123171.png")}
-        />
+
+<Image
+    style={[styles.homeChild, styles.childLayout]}
+    contentFit="cover"
+    source={require("../assets/home_background.png")}
+  />
+  {/* <Image
+    style={[styles.homeChild, styles.childLayout]}
+    contentFit="cover"
+    source={require("../assets/rectangle-123191.png")}
+  /> */}
+  {/* <Image
+    style={styles.iphone14Pro4Item}
+    contentFit="cover"
+    source={require("../assets/rectangle-123171.png")}
+  /> */}
         <Text style={[styles.beNary, styles.text2Typo]}>Be Nary</Text>
         <Image
           style={styles.iphone14Pro4Inner}
@@ -170,7 +190,7 @@ const Home = () => {
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
         <Text style={[styles.text3, styles.textTypo1]}>구름이의 성장 레벨</Text>
         <Text style={[styles.text6, styles.textTypo1]}>다음 레벨까지✨</Text>
-        <Slider style={[styles.levelBar, styles.iconLayout]} defaultValue={70} size="lg" colorScheme="#FAB9B4" w="75%" maxW="300">
+        <Slider style={[styles.levelBar, styles.iconLayout]} defaultValue={5} size="lg" colorScheme="#FAB9B4" w="75%" maxW="300">
         <Slider.Track bg="#E6E0E9">
           <Slider.FilledTrack bg="#FAB9B4" />
         </Slider.Track>
@@ -259,12 +279,12 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     position: "absolute",
-    height: 852,
-    width: 393,
+    height: "100%",
+    width: "100%",
   },
   childLayout: {
-    height: 468,
-    width: 425,
+    height: "100%",
+    width: "100%",
     position: "absolute",
   },
   iphone14ChildLayout: {
@@ -329,7 +349,7 @@ const styles = StyleSheet.create({
   iphone14Pro4Child: {
     top: 385,
     left: 0,
-    width: 425,
+    width: "100%",
   },
   iphone14Pro4Item: {
     width: 408,
@@ -396,14 +416,15 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.sFProBold,
   },
   iphone14Pro4: {
+    flex:1
   },
   homeChild: {
-    top: 399,
-    left: 1,
+    top: 0,
+    left: 0,
   },
   beNary: {
     top: 36,
-    left: 147,
+    alignSelf:"center",
     textShadowColor: Color.lightpink,
     textShadowOffset: {
       width: -1,
@@ -413,7 +434,7 @@ const styles = StyleSheet.create({
   },
   text2: {
     top: 1,
-    left: 84,
+    alignSelf:"center",
     textShadowColor: Color.pink,
     textShadowOffset: {
       width: -1,
@@ -424,7 +445,7 @@ const styles = StyleSheet.create({
   },
   text02: {
     top: 110,
-    left: 84,
+    alignSelf:"center",
     textShadowColor: Color.lightpink,
     textShadowOffset: {
       width: -1,
@@ -544,8 +565,8 @@ const styles = StyleSheet.create({
     top: 419,
   },
   home: {
-    height: 852,
-    width: 393,
+    display:"flex",
+    flex: 1,
   },
 });
 

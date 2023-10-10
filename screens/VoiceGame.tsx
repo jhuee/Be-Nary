@@ -10,6 +10,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { collection, query, where, getDocs, addDoc, doc, setDoc, updateDoc} from "firebase/firestore";
 import { dbUser } from "../firebaseConfig";
+import speechtoText from "./speechkit/stt";
+import todaymail from "./mail";
 
 interface Question {
   question: string;
@@ -26,7 +28,7 @@ const VoiceGame = () => {
   const [showModal, setShowModal] = useState(false); // 모달 띄우기 여부 상태
   const [modalMessage, setModalMessage] = useState(""); // 모달에 표시할 메시지 상태
   const [questionSeq, setQuestionSeq] = useState(""); //문제 순서에 따라 다시하기, 끝내기
-  const [nickname, setNickname] = useState<string | null>(null); // 닉네임 세팅
+  const [nickname, setNickname] = useState<string>(""); // 닉네임 세팅
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //
   const [level, setLevel] = useState<number>(1); //레벨
@@ -43,7 +45,7 @@ const VoiceGame = () => {
   
   // 년/월/일 형식으로 저장할 문자열 생성
   const dateString = `${year}/${month}/${day}`;
-  
+  const [userTalking, setUserTalking] = useState<string>("");
 
   const [gameState, setGameState] = useState({
     currentQuestionIndex: 0,
@@ -160,6 +162,7 @@ const VoiceGame = () => {
     }
     
     navigation.navigate("LevelUp"); // LevelUp 화면으로 이동
+
   
      } catch (error) {
        console.error("문서 조회 중 오류가 발생하였습니다:", error);
@@ -239,6 +242,7 @@ const VoiceGame = () => {
 
   getNickname();
   useEffect(() => {
+    stopRecording();
     function textToSpeech(_text: string) {
       const url =
         "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
@@ -311,6 +315,7 @@ const VoiceGame = () => {
 
   // 녹음을 시작하는 함수
   async function startRecording() {
+    
     try {
       console.log("Requesting permissions..");
       await Audio.requestPermissionsAsync();
@@ -357,6 +362,9 @@ const VoiceGame = () => {
     const accessKey = "ab9bf69a-2837-4014-86c7-29d836f1809c";
     const languageCode = "korean";
     const script = text;
+    const userTalk = await speechtoText(audioUri);
+    setUserTalking(userTalk);
+
 
     try {
       const audioContent = await FileSystem.readAsStringAsync(audioUri, {
@@ -406,7 +414,7 @@ const VoiceGame = () => {
                 const recordCollectionRef = collection(userDocRef, "record");
 
       // 새로운 문서 생성 및 데이터 저장
-              addDoc(recordCollectionRef, { score: responseData.return_object.score, word: text , date : dateString, backgroundColor : currentBackgroundColor, circleUrl : currentCircle, icon : questions[currentQuestionIndex].icon})
+              addDoc(recordCollectionRef, { score: responseData.return_object.score, word: text , date : dateString, userSay:userTalk, backgroundColor : currentBackgroundColor, circleUrl : currentCircle, icon : questions[currentQuestionIndex].icon})
               .then((docRef) => {
                 console.log("데이터가 성공적으로 저장되었습니다. 문서 ID:", docRef.id);
         })
@@ -424,6 +432,7 @@ const VoiceGame = () => {
         if (currentQuestionIndex === questions.length - 1) {
           setLevel((prevLevel) => prevLevel + 1);
           setQuestionSeq("그만하기");
+          todaymail(nickname);
           setShowModal(true);
           console.log(level);
         } else {
@@ -552,7 +561,7 @@ const styles = StyleSheet.create({
   },
   micClose: {
     top: 533,
-    left: 126,
+    alignSelf:"center",
     width: 148,
     height: 148,
     position: "absolute",
@@ -561,7 +570,7 @@ const styles = StyleSheet.create({
     top: 595,
     width: 210,
     height: 210,
-    left: 95,
+    alignSelf:"center",
     position: "absolute",
   },
   text1Position: {
@@ -604,7 +613,7 @@ const styles = StyleSheet.create({
     color: Color.white,
     textAlign: "center",
     fontFamily: FontFamily.juaRegular,
-    left: 95,
+    alignSelf:"center",
   },
   text1: {
     top: 321,
@@ -648,7 +657,7 @@ const styles = StyleSheet.create({
   },
   messageBox: {
     top: 611,
-    left: 28,
+    alignSelf:"center",
     borderRadius: Border.br_41xl,
     backgroundColor: Color.gray,
     width: 338,
@@ -695,10 +704,6 @@ const styles = StyleSheet.create({
     width: 339,
   },
   voiceGame: {
-    borderRadius: Border.br_31xl,
-    backgroundColor: Color.tomato_200,
-    borderStyle: "solid",
-    borderColor: "#FFFFFF",
     borderWidth: 1,
     width: "100%",
     height: 852,

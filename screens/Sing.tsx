@@ -42,6 +42,49 @@ const Sing = () => {
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const userCollection = collection(dbUser, "user");
   const [score, setScore] = useState(-1);
+  const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
+
+   //닉네임 가져오기
+   const updatelLevel = async () => {
+    if (nickName.length > 0) {
+      try {
+        const q = query(userCollection, where("nickname", "==", nickName));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          console.error("사용자 정보 없음");
+          return;
+        }
+        querySnapshot.forEach((doc) => {
+          const userDoc = doc.data();
+          if (userDoc) {
+            if (userDoc.level === 1) setChaURL(1);
+            else if (userDoc.level === 2) setChaURL(2);
+            else if (userDoc.level === 3) setChaURL(3);
+            else if (userDoc.level === 4) setChaURL(4);
+            else if (userDoc.level === 5) setChaURL(5);
+            else if (userDoc.level === 6) setChaURL(6);
+            else console.error("잘못된 레벨");
+          } else {
+            console.error("사용자 정보 없음");
+          }
+          console.log(chaURL);
+        });
+      } catch (error) {
+        console.error("사용자 정보를 불러오는 중 오류 발생: ", error);
+      }
+    }
+  }
+
+  useEffect(() => {
+    stopRecording();
+    getNickname();
+    updatelLevel();
+  }, []);
+  
+  useEffect(() => {
+    if (nickName) updatelLevel();
+  }, [nickName]);
+
 
   const getNickname = async () => {
     const storage = await AsyncStorage.getItem("nickname");
@@ -230,7 +273,6 @@ const Sing = () => {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       const userSing: string | null | undefined = await speechtoText(uri);
-
       if (userSing) {
         const result = compareStrings(userSing, text);
         setComparedResult(result);
@@ -274,10 +316,11 @@ const Sing = () => {
       }
     }
 
-    setScore(
+    const roundedScore = Math.round(
       ((correctSingArr.length - incorrectCount) / correctSingArr.length) * 100
-    ); // 백분율 점수 계산
-    console.log("Score: ", score); // 점수 출력
+    );
+    setScore(roundedScore); // 백분율 점수 반올림 계산
+    console.log("Score: ", roundedScore); // 점수 출력
 
     setNextsing(true);
     return result;
@@ -334,13 +377,11 @@ const Sing = () => {
       <Image
         style={styles.eggIcon}
         contentFit="cover"
-        source={require("../assets/egg1.png")}
+        source={{
+          uri: `https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`,
+        }}
       />
-      <Image
-        style={styles.hedsetIcon}
-        contentFit="cover"
-        source={require("../assets/hedset.png")}
-      />
+
 
       {recording ? (
         <Pressable onPress={stopRecording}>
@@ -464,10 +505,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   voiceTalk: {
-    borderRadius: Border.br_31xl,
-    borderStyle: "solid",
-    borderColor: "#000",
-    borderWidth: 1,
     flex: 1,
     width: "100%",
     height: "100%",
@@ -516,7 +553,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     marginLeft: 20,
     marginRight: 20,
-    top: 50  },
+    top: 50,
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

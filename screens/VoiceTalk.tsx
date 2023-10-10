@@ -31,6 +31,7 @@ const VoiceTalk = () => {
   const userCollection = collection(dbUser, "user");
   const [chaURL, setChaURL] = useState(-1); // chaURL을 상태로 선언
   //닉네임 가져오기
+
   const updatelLevel = async () => {
     if (nickName.length > 0) {
       try {
@@ -48,6 +49,7 @@ const VoiceTalk = () => {
             else if (userDoc.level === 3) setChaURL(3);
             else if (userDoc.level === 4) setChaURL(4);
             else if (userDoc.level === 5) setChaURL(5);
+            else if (userDoc.level === 5) setChaURL(6);
             else console.error("잘못된 레벨");
           } else {
             console.error("사용자 정보 없음");
@@ -58,23 +60,23 @@ const VoiceTalk = () => {
         console.error("사용자 정보를 불러오는 중 오류 발생: ", error);
       }
     }
-  }
+  };
   //닉네임 가져오기
   const getNickname = async () => {
     const storage = await AsyncStorage.getItem("nickname");
     if (storage) setNickname(storage);
     else console.log("닉네임 없음");
   };
-  
+
   useEffect(() => {
+    stopRecording();
     getNickname();
     updatelLevel();
   }, []);
-  
+
   useEffect(() => {
     if (nickName) updatelLevel();
   }, [nickName]);
-
 
   //response 가져오기
   useEffect(() => {
@@ -86,8 +88,12 @@ const VoiceTalk = () => {
         console.log("없음");
       }
     };
-
-    getAI();
+    // setInterval로 3초마다 getAI 함수를 호출합니다.
+    const interval = setInterval(() => {
+      getAI();
+    }, 1000); // 3000ms = 3초
+    // 컴포넌트가 unmount될 때 interval을 제거합니다.
+    return () => clearInterval(interval);
   }, [aiResponse]);
 
   // 녹음을 시작하는 함수
@@ -118,6 +124,7 @@ const VoiceTalk = () => {
       const uri = recording.getURI();
       console.log(uri);
       spechtoText(uri);
+      setRecording(null);
       await recording.stopAndUnloadAsync();
     }
     await Audio.setAudioModeAsync({
@@ -134,9 +141,8 @@ const VoiceTalk = () => {
       <Image
         style={styles.eggIcon}
         contentFit="cover"
-        source={ `https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`}
+        source={`https://itimgstorage.blob.core.windows.net/source/level${chaURL}.png`}
       />
-
 
       {recording ? (
         <Pressable onPress={stopRecording}>
@@ -163,7 +169,7 @@ const VoiceTalk = () => {
 const styles = StyleSheet.create({
   eggIcon: {
     top: 238,
-    left: 23,
+    alignSelf:"center",
     width: 348,
     height: 375,
     position: "absolute",
@@ -198,10 +204,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   voiceTalk: {
-    borderRadius: Border.br_31xl,
-    borderStyle: "solid",
-    borderColor: "#000",
-    borderWidth: 1,
     flex: 1,
     width: "100%",
     height: 852,
@@ -210,7 +212,7 @@ const styles = StyleSheet.create({
   },
   micClose: {
     top: 650,
-    left: 126,
+    alignSelf:"center",
     width: 148,
     height: 148,
     position: "absolute",
