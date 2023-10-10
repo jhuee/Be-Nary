@@ -90,7 +90,8 @@ const styles = StyleSheet.create({
   },
   startChild: {
     top: 177,
-    left: 14,
+    alignContent:"center",
+    alignSelf:"center",
     width: 366,
     height: 587,
     position: "absolute",
@@ -104,16 +105,19 @@ const styles = StyleSheet.create({
   },
   benary: {
     top: 568,
-    left: 144,
+    alignSelf:"center"
   },
   text: {
     top: 624,
-    left: 122,
+    alignSelf:"center"
+
   },
   startBtnIcon: {
     top: 0,
     left: 0,
     borderRadius: Border.br_61xl,
+    alignSelf:"center",
+    flex:1
   },
   text1: {
     top: 12,
@@ -126,7 +130,8 @@ const styles = StyleSheet.create({
   },
   startBtn: {
     top: 753,
-    left: 59,
+    
+    alignSelf:"center"
   },
   image13: {
     top: 398,
@@ -141,8 +146,9 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   removebgPreview3Icon: {
+    alignSelf:"center",
     top: 221,
-    left: 45,
+   
     width: 289,
     height: 311,
     position: "absolute",
@@ -150,7 +156,7 @@ const styles = StyleSheet.create({
   start: {
     flex: 1,
     width: "100%",
-    height: 852,
+    height: "100%",
     overflow: "hidden",
     backgroundColor: "transparent",
   },

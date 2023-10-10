@@ -299,6 +299,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     color: Color.lightpink,
     textAlign: "center", // 텍스트를 가운데 정렬합니다.
+    alignSelf:"center",
     zIndex: 1,
   },
   input1: {

@@ -115,7 +115,7 @@ const LevelUP = () => {
         contentFit="cover"
         source={require("../assets/ellipse-24.png")}
       />
-      <Text style={[styles.levelUptxt, styles.textTypo]}>{`LEVEL UP! `}</Text>
+      <Text style={[styles.levelUptxt, styles.textTypo]}>{`EXP UP! `}</Text>
       <Text style={[styles.text, styles.textTypo]}>{`구름이가 
 성장했어요!`}</Text>
       <Pressable
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: FontFamily.juaRegular,
     position: "absolute",
+    alignSelf:"center",
   },
   btnLayout: {
     height: 59,
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_61xl,
   },
   text1: {
-    top: 12,
+    top: 15,
     left: 110,
     fontSize: FontSize.size_9xl,
     color: "#a2a2ff",
@@ -238,6 +239,7 @@ const styles = StyleSheet.create({
     top: 221,
     width: 289,
     height: 311,
+    alignSelf:"center",
     position: "absolute",
   },
   levelUP: {

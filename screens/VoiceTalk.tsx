@@ -169,7 +169,7 @@ const VoiceTalk = () => {
 const styles = StyleSheet.create({
   eggIcon: {
     top: 238,
-    left: 23,
+    alignSelf:"center",
     width: 348,
     height: 375,
     position: "absolute",
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   micClose: {
     top: 650,
-    left: 126,
+    alignSelf:"center",
     width: 148,
     height: 148,
     position: "absolute",

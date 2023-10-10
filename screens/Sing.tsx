@@ -76,6 +76,7 @@ const Sing = () => {
   }
 
   useEffect(() => {
+    stopRecording();
     getNickname();
     updatelLevel();
   }, []);

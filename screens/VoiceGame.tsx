@@ -315,6 +315,7 @@ const VoiceGame = () => {
 
   // 녹음을 시작하는 함수
   async function startRecording() {
+    
     try {
       console.log("Requesting permissions..");
       await Audio.requestPermissionsAsync();
@@ -560,7 +561,7 @@ const styles = StyleSheet.create({
   },
   micClose: {
     top: 533,
-    left: 126,
+    alignSelf:"center",
     width: 148,
     height: 148,
     position: "absolute",
@@ -569,7 +570,7 @@ const styles = StyleSheet.create({
     top: 595,
     width: 210,
     height: 210,
-    left: 95,
+    alignSelf:"center",
     position: "absolute",
   },
   text1Position: {
@@ -612,7 +613,7 @@ const styles = StyleSheet.create({
     color: Color.white,
     textAlign: "center",
     fontFamily: FontFamily.juaRegular,
-    left: 95,
+    alignSelf:"center",
   },
   text1: {
     top: 321,
@@ -656,7 +657,7 @@ const styles = StyleSheet.create({
   },
   messageBox: {
     top: 611,
-    left: 28,
+    alignSelf:"center",
     borderRadius: Border.br_41xl,
     backgroundColor: Color.gray,
     width: 338,

@@ -248,7 +248,6 @@ const Review = () => {
 
   getNickname();
   useEffect(() => {
-    stopRecording();
     function textToSpeech(_text: string) {
       const url =
         "https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyCQDGtRuRpaSLimM0YiOwcP8Vaam1WmHAw";
@@ -538,7 +537,7 @@ const styles = StyleSheet.create({
   },
   micClose: {
     top: 533,
-    left: 126,
+    alignSelf:"center",
     width: 148,
     height: 148,
     position: "absolute",
@@ -547,7 +546,7 @@ const styles = StyleSheet.create({
     top: 595,
     width: 210,
     height: 210,
-    left: 95,
+    alignSelf:"center",
     position: "absolute",
   },
   text1Position: {
@@ -590,7 +589,7 @@ const styles = StyleSheet.create({
     color: Color.white,
     textAlign: "center",
     fontFamily: FontFamily.juaRegular,
-    left: 95,
+    alignSelf:"center",
   },
   text1: {
     top: 321,
@@ -634,7 +633,7 @@ const styles = StyleSheet.create({
   },
   messageBox: {
     top: 611,
-    left: 28,
+    alignSelf:"center",
     borderRadius: Border.br_41xl,
     backgroundColor: Color.gray,
     width: 338,
@@ -681,10 +680,6 @@ const styles = StyleSheet.create({
     width: 339,
   },
   voiceGame: {
-    borderRadius: Border.br_31xl,
-    backgroundColor: Color.tomato_200,
-    borderStyle: "solid",
-    borderColor: "#000",
     borderWidth: 1,
     width: "100%",
     height: 852,
